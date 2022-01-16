@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 import '../api.dart' as api;
 import '../models/pr.dart';
 
+typedef PRCallback = void Function(PR pr);
+
 class HomePage extends MaterialPage {
-  const HomePage() : super(
+  HomePage({
+    required final PRCallback onNavigateToPR,
+  }) : super(
     key: const ValueKey('HomePage'),
     restorationId: 'home-page',
-    child: const _HomePage(),
+    child: _HomePage(
+      onNavigateToPR: onNavigateToPR,
+    ),
   );
 }
 
 class _HomePage extends StatefulWidget {
-  const _HomePage({Key? key}) : super(key: key);
+  const _HomePage({
+    Key? key,
+    required final this.onNavigateToPR,
+  }) : super(key: key);
+
+  final PRCallback onNavigateToPR;
 
   @override
   State<_HomePage> createState() => _HomePageState();
@@ -27,19 +38,18 @@ class _HomePageState extends State<_HomePage> {
       _error = null;
     });
 
+    // TODO(justinmc): Caching.
     late final PR localPR;
     try {
-      localPR = await api.getPr(prNumber);
-    } catch (error, stacktrace) {
+      localPR = await api.getPr(int.parse(prNumber));
+    } catch (error) {
       setState(() {
         _error = error.toString();
       });
       return;
     }
 
-    setState(() {
-      _pr = localPR;
-    });
+    widget.onNavigateToPR(localPR);
   }
 
   @override

@@ -26,9 +26,25 @@ class _PRPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: const Center(
-        child: Text('This is a PR! TODO.'),
+      appBar: AppBar(
+        title: Text('PR #${pr.number}'),
+      ),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            if (pr.status == PRStatus.open)
+              const Text('Open'),
+            if (pr.status == PRStatus.draft)
+              const Text('Draft'),
+            if (pr.status == PRStatus.merged)
+              const Text('Merged'),
+            if (pr.status == PRStatus.closed)
+              const Text('Closed'),
+            // TODO(justinmc): URL launcher Text(''),
+            if (pr.status == PRStatus.merged)
+              Text('${pr.mergeCommitSHA} merged at ${pr.mergedAt} into branch ${pr.branch}.'),
+          ],
+        ),
       ),
     );
   }

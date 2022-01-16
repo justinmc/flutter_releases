@@ -3,6 +3,7 @@ import 'models/pr.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
+import 'api.dart' as api;
 
 enum ReleasesPage {
   unknown,
@@ -102,6 +103,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     notifyListeners();
   }
 
+  // TODO(justinmc): Make sure state restoration works.
   /*
   @override
   Future<void> setInitialRoutePath(ReleasesRoutePath configuration) {
@@ -119,17 +121,18 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
     if (configuration.page == ReleasesPage.pr) {
       page = ReleasesPage.pr;
-      // TODO(justinmc): Fetch PR here?
-      /*
-      pr = stations.singleWhere(
-        (Station station) => station.id == configuration.stationId,
-      );
 
-      if (station == null) {
+      if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
         return;
       }
-      */
+
+      try {
+        pr = await api.getPr(configuration.prNumber!);
+      } catch (error) {
+        page = ReleasesPage.unknown;
+        return;
+      }
     } else {
       pr = null;
       page = ReleasesPage.home;
@@ -142,7 +145,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       key: navigatorKey,
       restorationScopeId: 'root',
       pages: <Page>[
-        const HomePage(),
+        HomePage(
+          onNavigateToPR: onNavigateToPR,
+        ),
         if (page == ReleasesPage.unknown)
           const UnknownPage(),
         if (page == ReleasesPage.pr)

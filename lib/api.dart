@@ -5,7 +5,7 @@ import 'models/pr.dart';
 const String kAPI = "https://api.github.com/repos/flutter/flutter";
 const String kBranch = "master";
 
-Future<http.Response> _getPR(final String prNumber) {
+Future<http.Response> _getPR(final int prNumber) {
   return http.get(Uri.parse('$kAPI/pulls/$prNumber'));
 }
 
@@ -13,7 +13,7 @@ Future<http.Response> _getPR(final String prNumber) {
 //
 // Returns an error if the PR doesn't exist, isn't merged, or isn't based on
 // master.
-Future<PR> getPr(final String prNumber) async {
+Future<PR> getPr(final int prNumber) async {
   final http.Response prResponse = await _getPR(prNumber);
 
   if (prResponse.statusCode != 200) {
