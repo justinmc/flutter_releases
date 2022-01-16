@@ -8,9 +8,11 @@ enum PRStatus {
 class PR {
   const PR({
     required this.branch,
+    required this.htmlURL,
     required this.number,
     required this.state,
-    required this.htmlURL,
+    required this.title,
+    required this.user,
     this.mergeCommitSHA,
     this.mergedAt,
   });
@@ -22,14 +24,18 @@ class PR {
       branch = jsonMap['base']['ref'],
       number = jsonMap['number'],
       state = jsonMap['state'],
-      htmlURL = jsonMap['html_url'];
+      htmlURL = jsonMap['html_url'],
+      title = jsonMap['title'],
+      user = jsonMap['user']['login'];
 
   final String? mergeCommitSHA;
   final String? mergedAt;
   final String branch;
+  final String htmlURL;
   final int number;
   final String state;
-  final String htmlURL;
+  final String title;
+  final String user;
 
   bool get isMerged => mergedAt != null;
 

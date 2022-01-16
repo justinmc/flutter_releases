@@ -32,11 +32,12 @@ class _PRPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('PR #${pr.number}'),
+        title: Text('PR ${pr.title}'),
       ),
       body: Center(
         child: Column(
           children: <Widget>[
+            Text('#${pr.number} by ${pr.user}'),
             if (pr.status == PRStatus.open)
               const Text('Open'),
             if (pr.status == PRStatus.draft)
