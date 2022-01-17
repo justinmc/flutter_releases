@@ -40,14 +40,23 @@ Future<Branch> getBranch(BranchNames name) async {
   return Branch.fromJSON(jsonDecode(branchResponse.body));
 }
 
-Future<Branch> getStable() async {
-  final http.Response branchResponse = await _getBranch('stable');
+// Returns true iff sha is in the branch given by isInSha.
+Future<bool> isIn(String sha, String isInSha) async {
+  final http.Response compareResponse = await _compare(isInSha, sha);
 
-  if (branchResponse.statusCode != 200) {
-    throw ArgumentError("Couldn't get the stable branch.");
+  if (compareResponse.statusCode != 200 || compareResponse.body == '') {
+    throw ArgumentError("Couldn't compare $sha and $isInSha");
   }
 
-  return Branch.fromJSON(jsonDecode(branchResponse.body));
+  final Map<String, dynamic> comparison = jsonDecode(compareResponse.body);
+
+
+  if (comparison['status'] == '') {
+    throw ArgumentError("Couldn't compare $sha and $isInSha");
+  }
+
+  return comparison['status'] == 'behind'
+      || comparison['status'] == 'identical';
 }
 
 Future<http.Response> _getPR(final int prNumber) {
@@ -56,4 +65,8 @@ Future<http.Response> _getPR(final int prNumber) {
 
 Future<http.Response> _getBranch(final String branchName) {
   return http.get(Uri.parse('$kAPI/branches/$branchName'));
+}
+
+Future<http.Response> _compare(final String sha1, final String sha2) {
+  return http.get(Uri.parse('$kAPI/compare/$sha1...$sha2'));
 }

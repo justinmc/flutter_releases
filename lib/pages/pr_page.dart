@@ -29,6 +29,12 @@ class _PRPage extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    // TODO(justinmc): Cache this.
+    // TODO(justinmc): Pass in branch shas to this widget, then call api.isIn.
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -56,6 +62,7 @@ class _PRPage extends StatelessWidget {
             ),
             if (pr.status == PRStatus.merged)
               Text('${pr.mergeCommitSHA} merged at ${pr.mergedAt} into branch ${pr.branch}.'),
+            // TODO(justinmc): Add a disclaimer that this doesn't consider reverts.
           ],
         ),
       ),
