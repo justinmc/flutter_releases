@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/pr.dart';
+import 'models/branch.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
@@ -85,6 +86,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
   ReleasesPage page;
   PR? pr;
+  Branch? stable;
+  Branch? beta;
+  Branch? master;
 
   @override
   ReleasesRoutePath get currentConfiguration {
@@ -131,11 +135,21 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         pr = await api.getPr(configuration.prNumber!);
       } catch (error) {
         page = ReleasesPage.unknown;
-        return;
       }
-    } else {
-      pr = null;
-      page = ReleasesPage.home;
+      return;
+    }
+
+    pr = null;
+    page = ReleasesPage.home;
+    try {
+      stable = await api.getBranch(BranchNames.stable);
+      beta = await api.getBranch(BranchNames.beta);
+      master = await api.getBranch(BranchNames.master);
+    } catch (error) {
+      print(error);
+      // TODO(justinmc): Actually this should be an error on the home page.
+      page = ReleasesPage.unknown;
+      return;
     }
   }
 
@@ -146,6 +160,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       restorationScopeId: 'root',
       pages: <Page>[
         HomePage(
+          stable: stable,
+          beta: beta,
+          master: master,
           onNavigateToPR: onNavigateToPR,
         ),
         if (page == ReleasesPage.unknown)
