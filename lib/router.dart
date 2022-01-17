@@ -142,6 +142,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     pr = null;
     page = ReleasesPage.home;
     try {
+      // TODO(justinmc): Should fetch this for PRPage too. I need some state management.
       stable = await api.getBranch(BranchNames.stable);
       beta = await api.getBranch(BranchNames.beta);
       master = await api.getBranch(BranchNames.master);
@@ -170,6 +171,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         if (page == ReleasesPage.pr)
           PRPage(
             pr: pr!,
+            stable: stable,
+            beta: beta,
+            master: master,
           ),
       ],
       onPopPage: (Route<dynamic> route, dynamic result) {

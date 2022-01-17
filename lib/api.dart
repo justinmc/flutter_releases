@@ -42,6 +42,7 @@ Future<Branch> getBranch(BranchNames name) async {
 
 // Returns true iff sha is in the branch given by isInSha.
 Future<bool> isIn(String sha, String isInSha) async {
+  // TODO(justinmc): This seems to give a 404 for old PRs...
   final http.Response compareResponse = await _compare(isInSha, sha);
 
   if (compareResponse.statusCode != 200 || compareResponse.body == '') {
