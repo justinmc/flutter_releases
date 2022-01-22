@@ -49,55 +49,46 @@ class _PRPageState extends State<_PRPage> {
     if (!await launch(widget.pr.htmlURL)) throw 'Could not launch ${widget.pr.htmlURL}';
   }
 
-  void _updateIsIns() {
-    _isIn(widget.stable).then((final bool? isInStable) {
-      if (isInStable == true && !_branchesIsIn.contains(BranchNames.stable)) {
+  // Check if the PR is in the given branch and update _branchesIsIn.
+  //
+  // Assumes that being in an older branch implies also being in more advanced
+  // branches.
+  Future<bool?> _updateIsIn(BranchNames branchName) {
+    return _isIn(widget.stable).then((final bool? isInBranch) {
+      if (isInBranch == true && !_branchesIsIn.contains(branchName)) {
         setState(() {
-          _branchesIsIn.add(BranchNames.stable);
-        });
-      } else if (isInStable == false && _branchesIsIn.contains(BranchNames.stable)) {
-        setState(() {
-          _branchesIsIn.remove(BranchNames.stable);
-        });
-      }
-    }).catchError((error) {
-      print(error);
-      setState(() {
-        _branchesIsIn.remove(BranchNames.stable);
-      });
-    });
-    _isIn(widget.beta).then((final bool? isInBeta) {
-      if (isInBeta == true && !_branchesIsIn.contains(BranchNames.beta)) {
-        setState(() {
+          _branchesIsIn.add(branchName);
+          if (branchName == BranchNames.master) {
+            return;
+          }
+          _branchesIsIn.add(BranchNames.master);
+          if (branchName == BranchNames.beta) {
+            return;
+          }
           _branchesIsIn.add(BranchNames.beta);
         });
-      } else if (isInBeta == false && _branchesIsIn.contains(BranchNames.beta)) {
+      } else if (isInBranch == false && _branchesIsIn.contains(branchName)) {
         setState(() {
-          _branchesIsIn.remove(BranchNames.beta);
+          _branchesIsIn.remove(branchName);
         });
       }
+      return isInBranch;
     }).catchError((error) {
       print(error);
       setState(() {
-        _branchesIsIn.remove(BranchNames.beta);
+        _branchesIsIn.remove(branchName);
       });
     });
-    _isIn(widget.master).then((final bool? isInMaster) {
-      if (isInMaster == true && !_branchesIsIn.contains(BranchNames.master)) {
-        setState(() {
-          _branchesIsIn.add(BranchNames.master);
-        });
-      } else if (isInMaster == false && _branchesIsIn.contains(BranchNames.master)) {
-        setState(() {
-          _branchesIsIn.remove(BranchNames.master);
-        });
-      }
-    }).catchError((error) {
-      print(error);
-      setState(() {
-        _branchesIsIn.remove(BranchNames.master);
-      });
-    });
+  }
+
+  void _updateIsIns() async {
+    if (await _updateIsIn(BranchNames.stable) == true) {
+      return;
+    }
+    if (await _updateIsIn(BranchNames.beta) == true) {
+      return;
+    }
+    _updateIsIn(BranchNames.master);
   }
 
   Future<bool?> _isIn(final Branch? branch) async {
