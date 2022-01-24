@@ -21,6 +21,10 @@ class Branch {
   final String name;
   final DateTime date;
 
+  BranchNames get branchName => BranchNames.values.firstWhere((BranchNames branchName) {
+    return branchName.name == name;
+  });
+
   @override
   String toString() {
     return 'Branch {name: $name, sha: $sha, date: $date}';

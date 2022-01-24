@@ -3,8 +3,15 @@ import 'dart:convert';
 import 'models/branch.dart';
 import 'models/pr.dart';
 
-const String kAPI = "https://api.github.com/repos/flutter/flutter";
+const String kAPI = "https://api.github.com";
+const String kAPIFramework = "$kAPI/repos/flutter/flutter";
+const String kAPIEngine = "$kAPI/repos/flutter/engine";
 const String kBranch = "master";
+
+enum RepoNames {
+  flutter,
+  engine,
+}
 
 // Returns the SHA for the merge commit of the given PR.
 //
@@ -28,6 +35,23 @@ Future<PR> getPr(final int prNumber) async {
 
   return pr.mergeCommitSHA;
   */
+}
+
+/// Get the framework roll PR for the indicated engine PR.
+///
+/// prNumber must be a valid number for an engine PR.
+Future<PR> getRollPrFromEnginePr(int prNumber) async {
+  final http.Response prResponse = await http.get(Uri.parse('$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+flutter/engine%23$prNumber'));
+
+  if (prResponse.statusCode != 200) {
+    throw ArgumentError("Couldn't find the related roll PR.");
+  }
+
+  final Map<String, dynamic> json = jsonDecode(prResponse.body);
+  assert(json['total_count'] == 1, 'Found multiple roll PRs for engine PR $prNumber.');
+  final int rollPrNumber = json['items'][0]['number'];
+
+  return getPr(rollPrNumber);
 }
 
 Future<Branch> getBranch(BranchNames name) async {
@@ -61,13 +85,13 @@ Future<bool> isIn(String sha, String isInSha) async {
 }
 
 Future<http.Response> _getPR(final int prNumber) {
-  return http.get(Uri.parse('$kAPI/pulls/$prNumber'));
+  return http.get(Uri.parse('$kAPIFramework/pulls/$prNumber'));
 }
 
 Future<http.Response> _getBranch(final String branchName) {
-  return http.get(Uri.parse('$kAPI/branches/$branchName'));
+  return http.get(Uri.parse('$kAPIFramework/branches/$branchName'));
 }
 
 Future<http.Response> _compare(final String sha1, final String sha2) {
-  return http.get(Uri.parse('$kAPI/compare/$sha1...$sha2'));
+  return http.get(Uri.parse('$kAPIFramework/compare/$sha1...$sha2'));
 }

@@ -53,42 +53,47 @@ class _PRPageState extends State<_PRPage> {
   //
   // Assumes that being in an older branch implies also being in more advanced
   // branches.
-  Future<bool?> _updateIsIn(BranchNames branchName) {
-    return _isIn(widget.stable).then((final bool? isInBranch) {
-      if (isInBranch == true && !_branchesIsIn.contains(branchName)) {
+  //
+  // A return value of null indicates that the status can't be determined.
+  Future<bool?> _updateIsIn(Branch? branch) {
+    if (branch == null) {
+      return Future.value(null);
+    }
+    return _isIn(branch).then((final bool? isInBranch) {
+      if (isInBranch == true && !_branchesIsIn.contains(branch.branchName)) {
         setState(() {
-          _branchesIsIn.add(branchName);
-          if (branchName == BranchNames.master) {
+          _branchesIsIn.add(branch.branchName);
+          if (branch.branchName == BranchNames.master) {
             return;
           }
           _branchesIsIn.add(BranchNames.master);
-          if (branchName == BranchNames.beta) {
+          if (branch.branchName == BranchNames.beta) {
             return;
           }
           _branchesIsIn.add(BranchNames.beta);
         });
-      } else if (isInBranch == false && _branchesIsIn.contains(branchName)) {
+      } else if (isInBranch == false && _branchesIsIn.contains(branch.branchName)) {
         setState(() {
-          _branchesIsIn.remove(branchName);
+          _branchesIsIn.remove(branch.branchName);
         });
       }
       return isInBranch;
     }).catchError((error) {
       print(error);
       setState(() {
-        _branchesIsIn.remove(branchName);
+        _branchesIsIn.remove(branch.branchName);
       });
     });
   }
 
   void _updateIsIns() async {
-    if (await _updateIsIn(BranchNames.stable) == true) {
+    if (await _updateIsIn(widget.stable) == true) {
       return;
     }
-    if (await _updateIsIn(BranchNames.beta) == true) {
+    if (await _updateIsIn(widget.beta) == true) {
       return;
     }
-    _updateIsIn(BranchNames.master);
+    _updateIsIn(widget.master);
   }
 
   Future<bool?> _isIn(final Branch? branch) async {
@@ -135,7 +140,7 @@ class _PRPageState extends State<_PRPage> {
               const Text('Closed'),
             if (widget.pr.status == PRStatus.merged)
               // TODO(justinmc): More detail and prettier than just outputting the Set.
-              Text('This PR is in the following release channels: $_branchesIsIn'),
+              Text('This PR is in the following release channels: ${_branchesIsIn.map((BranchNames name) => name.name)}'),
             // TODO(justinmc): URL launcher Text(''),
             TextButton(
               style: TextButton.styleFrom(

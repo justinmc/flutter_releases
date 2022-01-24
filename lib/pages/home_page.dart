@@ -44,23 +44,40 @@ class _HomePage extends StatefulWidget {
 class _HomePageState extends State<_HomePage> {
   String? _error;
 
-  // TODO(justinmc): Accept prNumber or full URL.
-  void _getPR(String prNumber) async {
+  static const String _kEngineString = 'flutter/engine/pull/';
+  static const String _kFrameworkString = 'flutter/flutter/pull/';
+
+  // TODO(justinmc): Accept prNumber for flutter PRs too?
+  void _getPR(String input) async {
     setState(() {
       _error = null;
     });
 
-    // TODO(justinmc): Caching.
-    late final PR localPR;
+    String? enginePrUrl;
+    final int engineLocation = input.lastIndexOf(_kEngineString);
+    late PR localPR;
+
     try {
-      localPR = await api.getPr(int.parse(prNumber));
-    } catch (error) {
+      // TODO(justinmc): Caching.
+      if (engineLocation >= 0) {
+        final int enginePrNumber = int.parse(input.substring(engineLocation + _kEngineString.length));
+        localPR = await api.getRollPrFromEnginePr(enginePrNumber);
+      } else {
+        final int location = input.lastIndexOf(_kFrameworkString);
+        final int prNumber = int.parse(input.substring(location + _kFrameworkString.length));
+        localPR = await api.getPr(prNumber);
+      }
+    } catch (error, stacktrace) {
+      print(error);
+      print(stacktrace);
       setState(() {
         _error = error.toString();
       });
       return;
     }
 
+    // TODO(justinmc): PR page needs to actually get the engine PR and know the
+    // difference.
     widget.onNavigateToPR(localPR);
   }
 
@@ -88,11 +105,11 @@ class _HomePageState extends State<_HomePage> {
             if (widget.master != null)
               _Branch(branch: widget.master!),
             // From: https://docs.flutter.dev/development/tools/sdk/releases
-            const Text('Enter a PR number or URL.'),
+            const Text('Enter a PR URL from the framework or engine.'),
             // TODO(justinmc): Loading state.
             TextField(
               decoration: InputDecoration(
-                hintText: 'PR',
+                hintText: 'Github PR URL',
                 errorText: _error,
               ),
               onSubmitted: _getPR,
