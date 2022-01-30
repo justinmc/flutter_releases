@@ -58,3 +58,22 @@ class PR {
     return 'PR {number: $number, mergeCommitSHA: $mergeCommitSHA, mergedAt: $mergedAt, branch: $branch, htmlURL: $htmlURL}';
   }
 }
+
+/// A PR in the engine, along with its merge PR in the framework, if it exists.
+class EnginePR extends PR {
+  EnginePR({
+    required final PR enginePr,
+    this.rollPR,
+  }) : super(
+    branch: enginePr.branch,
+    htmlURL: enginePr.htmlURL,
+    number: enginePr.number,
+    state: enginePr.state,
+    title: enginePr.title,
+    user: enginePr.user,
+    mergeCommitSHA: enginePr.mergeCommitSHA,
+    mergedAt: enginePr.mergedAt,
+  );
+
+  final PR? rollPR;
+}

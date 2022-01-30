@@ -3,11 +3,13 @@ import '../api.dart' as api;
 import '../models/branch.dart';
 import '../models/pr.dart';
 
+typedef EnginePRCallback = void Function(EnginePR pr);
 typedef PRCallback = void Function(PR pr);
 
 class HomePage extends MaterialPage {
   HomePage({
-    required final PRCallback onNavigateToPR,
+    required final EnginePRCallback onNavigateToEnginePR,
+    required final PRCallback onNavigateToFrameworkPR,
     final Branch? stable,
     final Branch? beta,
     final Branch? master,
@@ -18,7 +20,8 @@ class HomePage extends MaterialPage {
       stable: stable,
       beta: beta,
       master: master,
-      onNavigateToPR: onNavigateToPR,
+      onNavigateToEnginePR: onNavigateToEnginePR,
+      onNavigateToFrameworkPR: onNavigateToFrameworkPR,
     ),
   );
 }
@@ -26,13 +29,15 @@ class HomePage extends MaterialPage {
 class _HomePage extends StatefulWidget {
   const _HomePage({
     Key? key,
-    required final this.onNavigateToPR,
+    required final this.onNavigateToEnginePR,
+    required final this.onNavigateToFrameworkPR,
     final this.stable,
     final this.beta,
     final this.master,
   }) : super(key: key);
 
-  final PRCallback onNavigateToPR;
+  final EnginePRCallback onNavigateToEnginePR;
+  final PRCallback onNavigateToFrameworkPR;
   final Branch? stable;
   final Branch? beta;
   final Branch? master;
@@ -56,20 +61,22 @@ class _HomePageState extends State<_HomePage> {
     });
 
     final int engineLocation = input.lastIndexOf(_kEngineString);
-    late PR localPR;
+    late PR localFrameworkPR;
+    late EnginePR localEnginePR;
+    final bool isEngine = engineLocation >= 0;
 
     try {
       // TODO(justinmc): Caching.
-      if (engineLocation >= 0) {
+      if (isEngine) {
         final int enginePrNumber = int.parse(input.substring(engineLocation + _kEngineString.length));
-        localPR = await api.getRollPrFromEnginePr(enginePrNumber);
+        localEnginePR = await api.getEnginePR(enginePrNumber);
       } else {
         final int location = input.lastIndexOf(_kFrameworkString);
         if (location < 0) {
           throw ArgumentError('Not a valid PR URL.');
         }
         final int prNumber = int.parse(input.substring(location + _kFrameworkString.length));
-        localPR = await api.getPr(prNumber);
+        localFrameworkPR = await api.getPr(prNumber);
       }
     } catch (error, stacktrace) {
       print(error);
@@ -86,9 +93,9 @@ class _HomePageState extends State<_HomePage> {
       _loading = false;
     });
 
-    // TODO(justinmc): PR page needs to actually get the engine PR and know the
-    // difference.
-    widget.onNavigateToPR(localPR);
+    isEngine
+        ? widget.onNavigateToEnginePR(localEnginePR)
+        : widget.onNavigateToFrameworkPR(localFrameworkPR);
   }
 
   @override

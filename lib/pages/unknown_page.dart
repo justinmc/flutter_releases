@@ -16,9 +16,11 @@ class _UnknownPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('404'),
+      ),
       body: const Center(
-        child: Text('404'),
+        child: Text("Sorry, this page doesn't exist!"),
       ),
     );
   }

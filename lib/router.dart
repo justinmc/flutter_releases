@@ -9,7 +9,8 @@ import 'api.dart' as api;
 enum ReleasesPage {
   unknown,
   home,
-  pr,
+  enginePR,
+  frameworkPR,
 }
 
 class ReleasesRoutePath {
@@ -20,8 +21,11 @@ class ReleasesRoutePath {
       : prNumber = null,
         page = ReleasesPage.home;
 
-  ReleasesRoutePath.pr(this.prNumber)
-      : page = ReleasesPage.pr;
+  ReleasesRoutePath.enginePR(this.prNumber)
+      : page = ReleasesPage.enginePR;
+
+  ReleasesRoutePath.frameworkPR(this.prNumber)
+      : page = ReleasesPage.frameworkPR;
 
   ReleasesRoutePath.unknown()
       : prNumber = null,
@@ -38,20 +42,33 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
       return ReleasesRoutePath.home();
     }
 
-    // Handle '/pr/:prNumber'
+    // Handle '/pr/engineorframework/:prNumber'
     if (uri.pathSegments.length == 2) {
       if (uri.pathSegments[0] != 'pr') {
         return ReleasesRoutePath.unknown();
       }
 
-      late final int prNumber;
-      try {
-        prNumber = int.parse(uri.pathSegments[1]);
-      } catch (error) {
-        return ReleasesRoutePath.unknown();
+      if (uri.pathSegments[1] == 'engine') {
+        late final int prNumber;
+        try {
+          prNumber = int.parse(uri.pathSegments[2]);
+        } catch (error) {
+          return ReleasesRoutePath.unknown();
+        }
+
+        return ReleasesRoutePath.enginePR(prNumber);
+      } else if (uri.pathSegments[1] == 'framework') {
+        late final int prNumber;
+        try {
+          prNumber = int.parse(uri.pathSegments[1]);
+        } catch (error) {
+          return ReleasesRoutePath.unknown();
+        }
+
+        return ReleasesRoutePath.frameworkPR(prNumber);
       }
 
-      return ReleasesRoutePath.pr(prNumber);
+      return ReleasesRoutePath.unknown();
     }
 
     // Handle unknown routes
@@ -66,8 +83,11 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
     if (configuration.page == ReleasesPage.home) {
       return const RouteInformation(location: '/');
     }
-    if (configuration.page == ReleasesPage.pr) {
-      return RouteInformation(location: '/pr/${configuration.prNumber}');
+    if (configuration.page == ReleasesPage.frameworkPR) {
+      return RouteInformation(location: '/pr/framework/${configuration.prNumber}');
+    }
+    if (configuration.page == ReleasesPage.enginePR) {
+      return RouteInformation(location: '/pr/engine/${configuration.prNumber}');
     }
     return null;
   }
@@ -77,7 +97,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<ReleasesRoutePath> {
 
   ReleasesRouterDelegate({
-    this.pr,
+    this.enginePR,
+    this.frameworkPR,
     this.page = ReleasesPage.home,
   }) : navigatorKey = GlobalKey<NavigatorState>();
 
@@ -85,7 +106,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   final GlobalKey<NavigatorState> navigatorKey;
 
   ReleasesPage page;
-  PR? pr;
+  PR? frameworkPR;
+  EnginePR? enginePR;
   Branch? stable;
   Branch? beta;
   Branch? master;
@@ -95,15 +117,31 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     if (page == ReleasesPage.unknown) {
       return ReleasesRoutePath.unknown();
     }
-    assert(pr != null || page != ReleasesPage.pr);
-    return page == ReleasesPage.pr
-        ? ReleasesRoutePath.pr(pr!.number)
-        : ReleasesRoutePath.home();
+    assert(!(page == ReleasesPage.frameworkPR && frameworkPR == null));
+    assert(!(page == ReleasesPage.enginePR && enginePR == null));
+    switch (page) {
+      case ReleasesPage.home:
+        return ReleasesRoutePath.home();
+      case ReleasesPage.frameworkPR:
+        return ReleasesRoutePath.frameworkPR(frameworkPR!.number);
+      case ReleasesPage.enginePR:
+        return ReleasesRoutePath.enginePR(enginePR!.number);
+      case ReleasesPage.unknown:
+        return ReleasesRoutePath.unknown();
+    }
   }
 
-  void onNavigateToPR(PR selectedPR) {
-    pr = selectedPR;
-    page = ReleasesPage.pr;
+  void onNavigateToEnginePR(EnginePR selectedPR) {
+    frameworkPR = null;
+    enginePR = selectedPR;
+    page = ReleasesPage.enginePR;
+    notifyListeners();
+  }
+
+  void onNavigateToFrameworkPR(PR selectedPR) {
+    frameworkPR = selectedPR;
+    enginePR = null;
+    page = ReleasesPage.frameworkPR;
     notifyListeners();
   }
 
@@ -118,13 +156,14 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   @override
   Future<void> setNewRoutePath(final ReleasesRoutePath configuration) async {
     if (configuration.page == ReleasesPage.unknown) {
-      pr = null;
+      enginePR = null;
+      frameworkPR = null;
       page = ReleasesPage.unknown;
       return;
     }
 
-    if (configuration.page == ReleasesPage.pr) {
-      page = ReleasesPage.pr;
+    if (configuration.page == ReleasesPage.enginePR) {
+      page = ReleasesPage.enginePR;
 
       if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
@@ -132,17 +171,36 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       }
 
       try {
-        pr = await api.getPr(configuration.prNumber!);
+        enginePR = await api.getEnginePR(configuration.prNumber!);
       } catch (error) {
         page = ReleasesPage.unknown;
       }
+      frameworkPR = null;
       return;
     }
 
-    pr = null;
+    if (configuration.page == ReleasesPage.frameworkPR) {
+      page = ReleasesPage.frameworkPR;
+
+      if (configuration.prNumber == null) {
+        page = ReleasesPage.unknown;
+        return;
+      }
+
+      try {
+        frameworkPR = await api.getPr(configuration.prNumber!);
+      } catch (error) {
+        page = ReleasesPage.unknown;
+      }
+      enginePR = null;
+      return;
+    }
+
+    enginePR = null;
+    frameworkPR = null;
     page = ReleasesPage.home;
     try {
-      // TODO(justinmc): Should fetch this for PRPage too. I need some state management.
+      // TODO(justinmc): Should fetch this for PRPages too. I need some state management.
       stable = await api.getBranch(BranchNames.stable);
       beta = await api.getBranch(BranchNames.beta);
       master = await api.getBranch(BranchNames.master);
@@ -164,13 +222,21 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           stable: stable,
           beta: beta,
           master: master,
-          onNavigateToPR: onNavigateToPR,
+          onNavigateToEnginePR: onNavigateToEnginePR,
+          onNavigateToFrameworkPR: onNavigateToFrameworkPR,
         ),
         if (page == ReleasesPage.unknown)
           const UnknownPage(),
-        if (page == ReleasesPage.pr)
-          PRPage(
-            pr: pr!,
+        if (page == ReleasesPage.enginePR)
+          EnginePRPage(
+            pr: enginePR!,
+            stable: stable,
+            beta: beta,
+            master: master,
+          ),
+        if (page == ReleasesPage.frameworkPR)
+          FrameworkPRPage(
+            pr: frameworkPR!,
             stable: stable,
             beta: beta,
             master: master,
@@ -181,7 +247,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           return false;
         }
 
-        pr = null;
+        enginePR = null;
+        frameworkPR = null;
         page = ReleasesPage.home;
         notifyListeners();
 

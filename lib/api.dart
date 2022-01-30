@@ -37,6 +37,7 @@ Future<PR> getPr(final int prNumber) async {
   */
 }
 
+// TODO(justinmc): Remove.
 /// Get the framework roll PR for the indicated engine PR.
 ///
 /// prNumber must be a valid number for an engine PR.
@@ -49,9 +50,31 @@ Future<PR> getRollPrFromEnginePr(int prNumber) async {
 
   final Map<String, dynamic> json = jsonDecode(prResponse.body);
   assert(json['total_count'] == 1, 'Found multiple roll PRs for engine PR $prNumber.');
-  final int rollPrNumber = json['items'][0]['number'];
+  final int rollPRNumber = json['items'][0]['number'];
 
-  return getPr(rollPrNumber);
+  return getPr(rollPRNumber);
+}
+
+/// Get the [EnginePR] for the given engine PR number, which includes the roll
+/// PR where it went into the engine.
+Future<EnginePR> getEnginePR(int prNumber) async {
+  final http.Response prResponse = await http.get(Uri.parse('$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+flutter/engine%23$prNumber'));
+
+  if (prResponse.statusCode != 200) {
+    throw ArgumentError("Couldn't find the related roll PR.");
+  }
+
+  final Map<String, dynamic> json = jsonDecode(prResponse.body);
+  assert(json['total_count'] == 1, 'Found multiple roll PRs for engine PR $prNumber.');
+  final int rollPRNumber = json['items'][0]['number'];
+
+  final PR rollPR = await getPr(rollPRNumber);
+  final PR enginePr = await _getEnginePROnly(prNumber);
+
+  return EnginePR(
+    rollPR: rollPR,
+    enginePr: enginePr,
+  );
 }
 
 Future<Branch> getBranch(BranchNames name) async {
@@ -84,8 +107,19 @@ Future<bool> isIn(String sha, String isInSha) async {
       || comparison['status'] == 'identical';
 }
 
-Future<http.Response> _getPR(final int prNumber) {
-  return http.get(Uri.parse('$kAPIFramework/pulls/$prNumber'));
+// Get the PR in the engine repo, not the full EnginePR.
+Future<PR> _getEnginePROnly(final int prNumber) async {
+  final http.Response prResponse = await _getPR(prNumber, kAPIEngine);
+
+  if (prResponse.statusCode != 200) {
+    throw ArgumentError("Couldn't find the given engine PR \"$prNumber\".");
+  }
+
+  return PR.fromJSON(jsonDecode(prResponse.body));
+}
+
+Future<http.Response> _getPR(final int prNumber, [String url = kAPIFramework]) {
+  return http.get(Uri.parse('$url/pulls/$prNumber'));
 }
 
 Future<http.Response> _getBranch(final String branchName) {
