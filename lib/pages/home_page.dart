@@ -64,6 +64,9 @@ class _HomePageState extends State<_HomePage> {
         localPR = await api.getRollPrFromEnginePr(enginePrNumber);
       } else {
         final int location = input.lastIndexOf(_kFrameworkString);
+        if (location < 0) {
+          throw ArgumentError('Not a valid PR URL.');
+        }
         final int prNumber = int.parse(input.substring(location + _kFrameworkString.length));
         localPR = await api.getPr(prNumber);
       }
@@ -71,7 +74,11 @@ class _HomePageState extends State<_HomePage> {
       print(error);
       print(stacktrace);
       setState(() {
-        _error = error.toString();
+        if (error is ArgumentError) {
+          _error = error.message;
+        } else {
+          _error = error.toString();
+        }
       });
       return;
     }
