@@ -43,17 +43,18 @@ class _HomePage extends StatefulWidget {
 
 class _HomePageState extends State<_HomePage> {
   String? _error;
+  bool _loading = false;
 
   static const String _kEngineString = 'flutter/engine/pull/';
   static const String _kFrameworkString = 'flutter/flutter/pull/';
 
   // TODO(justinmc): Accept prNumber for flutter PRs too?
-  void _getPR(String input) async {
+  void _onSubmittedPR(String input) async {
     setState(() {
       _error = null;
+      _loading = true;
     });
 
-    String? enginePrUrl;
     final int engineLocation = input.lastIndexOf(_kEngineString);
     late PR localPR;
 
@@ -73,15 +74,17 @@ class _HomePageState extends State<_HomePage> {
     } catch (error, stacktrace) {
       print(error);
       print(stacktrace);
+      final String message = error is ArgumentError ? error.message : error.toString();
       setState(() {
-        if (error is ArgumentError) {
-          _error = error.message;
-        } else {
-          _error = error.toString();
-        }
+        _error = message;
+        _loading = false;
       });
       return;
     }
+
+    setState(() {
+      _loading = false;
+    });
 
     // TODO(justinmc): PR page needs to actually get the engine PR and know the
     // difference.
@@ -115,11 +118,12 @@ class _HomePageState extends State<_HomePage> {
             const Text('Enter a PR URL from the framework or engine.'),
             // TODO(justinmc): Loading state.
             TextField(
+              enabled: !_loading,
               decoration: InputDecoration(
                 hintText: 'Github PR URL',
                 errorText: _error,
               ),
-              onSubmitted: _getPR,
+              onSubmitted: _onSubmittedPR,
             ),
           ],
         ),
