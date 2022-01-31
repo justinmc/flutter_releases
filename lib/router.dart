@@ -43,7 +43,7 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
     }
 
     // Handle '/pr/engineorframework/:prNumber'
-    if (uri.pathSegments.length == 2) {
+    if (uri.pathSegments.length == 3) {
       if (uri.pathSegments[0] != 'pr') {
         return ReleasesRoutePath.unknown();
       }
