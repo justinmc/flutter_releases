@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import '../widgets/link.dart';
 
 class UnknownPage extends MaterialPage {
-  const UnknownPage() : super(
+  UnknownPage({
+    required final VoidCallback onNavigateHome,
+  }) : super(
     key: const ValueKey('UnknownPage'),
     restorationId: 'home-page',
-    child: const _UnknownPage(),
+    child: _UnknownPage(
+      onNavigateHome: onNavigateHome,
+    ),
   );
 }
 
 class _UnknownPage extends StatelessWidget {
   const _UnknownPage({
     Key? key,
+    required this.onNavigateHome,
   }) : super(key: key);
+
+  final VoidCallback onNavigateHome;
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +27,17 @@ class _UnknownPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('404'),
       ),
-      body: const Center(
-        child: Text("Sorry, this page doesn't exist!"),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text("Sorry, this page doesn't exist!"),
+            Link(
+              text: 'Return home',
+              onTap: onNavigateHome,
+            ),
+          ],
+        ),
       ),
     );
   }

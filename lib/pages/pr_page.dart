@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/branch.dart';
 import '../models/pr.dart';
 import '../api.dart' as api;
+import '../widgets/link.dart';
 
 class FrameworkPRPage extends MaterialPage {
   FrameworkPRPage({
@@ -169,7 +170,7 @@ class EnginePRPage extends MaterialPage {
   }) : super(
     key: const ValueKey('EnginePRPage'),
     restorationId: 'engine-pr-page',
-    child: _PRPage(
+    child: _EnginePRPage(
       pr: pr,
       stable: stable,
       beta: beta,
@@ -298,12 +299,9 @@ class _EnginePRPageState extends State<_EnginePRPage> {
               // TODO(justinmc): More detail and prettier than just outputting the Set.
               Text('This PR is in the following release channels: ${_branchesIsIn.map((BranchNames name) => name.name)}'),
             // TODO(justinmc): URL launcher Text(''),
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              onPressed: _onTapGithub,
-              child: const Text('View on Github'),
+            Link(
+              text: 'View on Github',
+              url: widget.pr.htmlURL,
             ),
             if (widget.pr.status == PRStatus.merged)
               Text('${widget.pr.mergeCommitSHA} merged at ${widget.pr.mergedAt} into branch ${widget.pr.branch}.'),

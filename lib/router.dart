@@ -131,6 +131,13 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     }
   }
 
+  void onNavigateHome() {
+    frameworkPR = null;
+    enginePR = null;
+    page = ReleasesPage.home;
+    notifyListeners();
+  }
+
   void onNavigateToEnginePR(EnginePR selectedPR) {
     frameworkPR = null;
     enginePR = selectedPR;
@@ -226,7 +233,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           onNavigateToFrameworkPR: onNavigateToFrameworkPR,
         ),
         if (page == ReleasesPage.unknown)
-          const UnknownPage(),
+          UnknownPage(
+            onNavigateHome: onNavigateHome,
+          ),
         if (page == ReleasesPage.enginePR)
           EnginePRPage(
             pr: enginePR!,
