@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/branch.dart';
+import '../models/branches.dart';
 import '../models/pr.dart';
 import '../api.dart' as api;
+import '../providers/branches_provider.dart';
 import '../widgets/link.dart';
 
 class FrameworkPRPage extends MaterialPage {
@@ -181,7 +184,7 @@ class EnginePRPage extends MaterialPage {
   final EnginePR pr;
 }
 
-class _EnginePRPage extends StatefulWidget {
+class _EnginePRPage extends ConsumerStatefulWidget {
   const _EnginePRPage({
     Key? key,
     required this.pr,
@@ -199,7 +202,7 @@ class _EnginePRPage extends StatefulWidget {
   _EnginePRPageState createState() => _EnginePRPageState();
 }
 
-class _EnginePRPageState extends State<_EnginePRPage> {
+class _EnginePRPageState extends ConsumerState<_EnginePRPage> {
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
 
   void _onTapGithub() async {
@@ -279,6 +282,10 @@ class _EnginePRPageState extends State<_EnginePRPage> {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(justinmc): Actually I need this elsewhere, not in build...
+    final Branches branches = ref.watch(branchesProvider);
+    print('justin branches what $branches');
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Engine PR ${widget.pr.title}'),

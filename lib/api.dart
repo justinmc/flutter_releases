@@ -81,7 +81,7 @@ Future<Branch> getBranch(BranchNames name) async {
   final http.Response branchResponse = await _getBranch(name.name);
 
   if (branchResponse.statusCode != 200) {
-    throw ArgumentError("Couldn't get the stable branch.");
+    throw ArgumentError("Couldn't get the branch $name.");
   }
 
   return Branch.fromJSON(jsonDecode(branchResponse.body));

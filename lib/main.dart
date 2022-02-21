@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'router.dart';
 
 void main() {
-  runApp(const ReleasesApp());
+  runApp(
+    const ProviderScope(
+      child: ReleasesApp(),
+    ),
+  );
 }
 
-class ReleasesApp extends StatefulWidget {
+class ReleasesApp extends ConsumerStatefulWidget {
   const ReleasesApp({
     Key? key,
   }) : super(key: key);
@@ -14,10 +20,16 @@ class ReleasesApp extends StatefulWidget {
   _ReleasesAppState createState() => _ReleasesAppState();
 }
 
-class _ReleasesAppState extends State<ReleasesApp> {
-  final ReleasesRouterDelegate _routerDelegate = ReleasesRouterDelegate();
+class _ReleasesAppState extends ConsumerState<ReleasesApp> {
+  late final ReleasesRouterDelegate _routerDelegate;
   final ReleasesRouteInformationParser _routeInformationParser =
       ReleasesRouteInformationParser();
+
+  @override
+  void initState() {
+    super.initState();
+    _routerDelegate = ReleasesRouterDelegate(ref: ref);
+  }
 
   @override
   Widget build(BuildContext context) {

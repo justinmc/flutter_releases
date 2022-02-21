@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'models/pr.dart';
 import 'models/branch.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
+import 'providers/branches_provider.dart';
 import 'api.dart' as api;
 
 enum ReleasesPage {
@@ -100,10 +104,13 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     this.enginePR,
     this.frameworkPR,
     this.page = ReleasesPage.home,
+    required this.ref,
   }) : navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   final GlobalKey<NavigatorState> navigatorKey;
+
+  final WidgetRef ref;
 
   ReleasesPage page;
   PR? frameworkPR;
@@ -169,6 +176,21 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       return;
     }
 
+    try {
+      // TODO(justinmc): Do I still need the local branches variables or just use the provider?
+      stable = await api.getBranch(BranchNames.stable);
+      ref.read(branchesProvider.notifier).stable = stable;
+      beta = await api.getBranch(BranchNames.beta);
+      ref.read(branchesProvider.notifier).beta = beta;
+      master = await api.getBranch(BranchNames.master);
+      ref.read(branchesProvider.notifier).master = master;
+    } catch (error) {
+      print(error);
+      // TODO(justinmc): Actually this should be an error on the home page.
+      page = ReleasesPage.unknown;
+      return;
+    }
+
     if (configuration.page == ReleasesPage.enginePR) {
       page = ReleasesPage.enginePR;
 
@@ -206,17 +228,6 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     enginePR = null;
     frameworkPR = null;
     page = ReleasesPage.home;
-    try {
-      // TODO(justinmc): Should fetch this for PRPages too. I need some state management.
-      stable = await api.getBranch(BranchNames.stable);
-      beta = await api.getBranch(BranchNames.beta);
-      master = await api.getBranch(BranchNames.master);
-    } catch (error) {
-      print(error);
-      // TODO(justinmc): Actually this should be an error on the home page.
-      page = ReleasesPage.unknown;
-      return;
-    }
   }
 
   @override
