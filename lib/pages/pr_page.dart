@@ -257,14 +257,15 @@ class _EnginePRPageState extends ConsumerState<_EnginePRPage> {
   }
 
   Future<bool?> _isIn(final Branch? branch) async {
-    if (widget.pr.status != PRStatus.merged || widget.pr.mergeCommitSHA == null) {
+    if (widget.pr.status != PRStatus.merged || widget.pr.mergeCommitSHA == null
+        || widget.pr.rollPR == null || widget.pr.rollPR!.mergeCommitSHA == null) {
       return false;
     }
 
     if (branch == null) {
       return null;
     }
-    return api.isIn(widget.pr.mergeCommitSHA!, branch.sha);
+    return api.isIn(widget.pr.rollPR!.mergeCommitSHA!, branch.sha);
   }
 
   @override
@@ -284,7 +285,6 @@ class _EnginePRPageState extends ConsumerState<_EnginePRPage> {
   Widget build(BuildContext context) {
     // TODO(justinmc): Actually I need this elsewhere, not in build...
     final Branches branches = ref.watch(branchesProvider);
-    print('justin branches what $branches');
 
     return Scaffold(
       appBar: AppBar(
