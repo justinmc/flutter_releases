@@ -145,7 +145,22 @@ class _PRPageState extends ConsumerState<_PRPage> {
       body: Center(
         child: Column(
           children: <Widget>[
-            Text('#${widget.pr.number} by ${widget.pr.user}'),
+            SizedBox(
+              width: 200.0,
+              child: Row(
+                children: <Widget>[
+                  Link(
+                    text: '#${widget.pr.number}',
+                    url: widget.pr.htmlURL,
+                  ),
+                  const Text(' by '),
+                  Link(
+                    text: widget.pr.user,
+                    url: 'https://www.github.com/${widget.pr.user}',
+                  ),
+                ],
+              ),
+            ),
             if (widget.pr.status == PRStatus.open)
               const Text('Open'),
             if (widget.pr.status == PRStatus.draft)
