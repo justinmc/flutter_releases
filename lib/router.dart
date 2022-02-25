@@ -178,7 +178,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
     try {
       // TODO(justinmc): Do I still need the local branches variables or just use the provider?
+      print('justin getting stable...');
       stable = await api.getBranch(BranchNames.stable);
+      print('justin got stable $stable');
       ref.read(branchesProvider.notifier).stable = stable;
       beta = await api.getBranch(BranchNames.beta);
       ref.read(branchesProvider.notifier).beta = beta;
@@ -248,18 +250,12 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
             onNavigateHome: onNavigateHome,
           ),
         if (page == ReleasesPage.enginePR)
-          EnginePRPage(
+          PRPage(
             pr: enginePR!,
-            stable: stable,
-            beta: beta,
-            master: master,
           ),
         if (page == ReleasesPage.frameworkPR)
-          FrameworkPRPage(
+          PRPage(
             pr: frameworkPR!,
-            stable: stable,
-            beta: beta,
-            master: master,
           ),
       ],
       onPopPage: (Route<dynamic> route, dynamic result) {

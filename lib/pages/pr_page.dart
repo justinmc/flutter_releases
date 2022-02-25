@@ -8,45 +8,33 @@ import '../api.dart' as api;
 import '../providers/branches_provider.dart';
 import '../widgets/link.dart';
 
-class FrameworkPRPage extends MaterialPage {
-  FrameworkPRPage({
+class PRPage extends MaterialPage {
+  PRPage({
     required this.pr,
-    final Branch? stable,
-    final Branch? beta,
-    final Branch? master,
   }) : super(
     key: const ValueKey('FrameworkPRPage'),
     restorationId: 'framework-pr-page',
     child: _PRPage(
       pr: pr,
-      stable: stable,
-      beta: beta,
-      master: master,
     ),
   );
 
   final PR pr;
 }
 
-class _PRPage extends StatefulWidget {
+class _PRPage extends ConsumerStatefulWidget {
   const _PRPage({
     Key? key,
     required this.pr,
-    final this.stable,
-    final this.beta,
-    final this.master,
   }) : super(key: key);
 
   final PR pr;
-  final Branch? stable;
-  final Branch? beta;
-  final Branch? master;
 
   @override
   _PRPageState createState() => _PRPageState();
 }
 
-class _PRPageState extends State<_PRPage> {
+class _PRPageState extends ConsumerState<_PRPage> {
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
 
   void _onTapGithub() async {
@@ -91,16 +79,38 @@ class _PRPageState extends State<_PRPage> {
   }
 
   void _updateIsIns() async {
-    if (await _updateIsIn(widget.stable) == true) {
+    final Branches branches = ref.read(branchesProvider);
+    if (await _updateIsIn(branches.stable) == true) {
       return;
     }
-    if (await _updateIsIn(widget.beta) == true) {
+    if (await _updateIsIn(branches.beta) == true) {
       return;
     }
-    _updateIsIn(widget.master);
+    _updateIsIn(branches.master);
+  }
+
+  Future<bool?> _enginePRIsIn(final Branch? branch) async {
+    final EnginePR pr = widget.pr as EnginePR;
+
+    if (pr.status != PRStatus.merged || pr.mergeCommitSHA == null
+        || pr.rollPR == null || pr.rollPR!.mergeCommitSHA == null) {
+      return false;
+    }
+
+    if (branch == null) {
+      return null;
+    }
+    return api.isIn(pr.rollPR!.mergeCommitSHA!, branch.sha);
   }
 
   Future<bool?> _isIn(final Branch? branch) async {
+    if (widget.pr is EnginePR) {
+      return _enginePRIsIn(branch);
+    }
+    return _frameworkPRIsIn(branch);
+  }
+
+  Future<bool?> _frameworkPRIsIn(final Branch? branch) async {
     if (widget.pr.status != PRStatus.merged || widget.pr.mergeCommitSHA == null) {
       return false;
     }
@@ -126,9 +136,11 @@ class _PRPageState extends State<_PRPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Branches branches = ref.watch(branchesProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Framework PR ${widget.pr.title}'),
+        title: Text('${widget.pr is EnginePR ? 'Engine' : 'Framework'} PR ${widget.pr.title}'),
       ),
       body: Center(
         child: Column(
@@ -143,8 +155,14 @@ class _PRPageState extends State<_PRPage> {
             if (widget.pr.status == PRStatus.closed)
               const Text('Closed'),
             if (widget.pr.status == PRStatus.merged)
-              // TODO(justinmc): More detail and prettier than just outputting the Set.
-              Text('This PR is in the following release channels: ${_branchesIsIn.map((BranchNames name) => name.name)}'),
+              _BranchesIn(
+                // TODO(justinmc): This isn't quite right. If the PR hasn't
+                // loaded yet but the branch has, then it will think that the PR
+                // isn't in the branch.
+                isInStable: branches.stable == null ? null : _branchesIsIn.contains(BranchNames.stable),
+                isInBeta: branches.beta == null ? null : _branchesIsIn.contains(BranchNames.beta),
+                isInMaster: branches.master == null ? null : _branchesIsIn.contains(BranchNames.master),
+              ),
             // TODO(justinmc): URL launcher Text(''),
             TextButton(
               style: TextButton.styleFrom(
@@ -163,158 +181,58 @@ class _PRPageState extends State<_PRPage> {
   }
 }
 
-// TODO(justinmc): Code reuse, maybe move to separate files.
-class EnginePRPage extends MaterialPage {
-  EnginePRPage({
-    required this.pr,
-    final Branch? stable,
-    final Branch? beta,
-    final Branch? master,
-  }) : super(
-    key: const ValueKey('EnginePRPage'),
-    restorationId: 'engine-pr-page',
-    child: _EnginePRPage(
-      pr: pr,
-      stable: stable,
-      beta: beta,
-      master: master,
-    ),
-  );
-
-  final EnginePR pr;
-}
-
-class _EnginePRPage extends ConsumerStatefulWidget {
-  const _EnginePRPage({
+class _BranchesIn extends StatelessWidget {
+  const _BranchesIn({
     Key? key,
-    required this.pr,
-    final this.stable,
-    final this.beta,
-    final this.master,
+    this.isInStable,
+    this.isInBeta,
+    this.isInMaster,
   }) : super(key: key);
 
-  final EnginePR pr;
-  final Branch? stable;
-  final Branch? beta;
-  final Branch? master;
+  final bool? isInStable;
+  final bool? isInBeta;
+  final bool? isInMaster;
 
-  @override
-  _EnginePRPageState createState() => _EnginePRPageState();
-}
-
-class _EnginePRPageState extends ConsumerState<_EnginePRPage> {
-  final Set<BranchNames> _branchesIsIn = <BranchNames>{};
-
-  void _onTapGithub() async {
-    if (!await launch(widget.pr.htmlURL)) throw 'Could not launch ${widget.pr.htmlURL}';
-  }
-
-  // Check if the PR is in the given branch and update _branchesIsIn.
-  //
-  // Assumes that being in an older branch implies also being in more advanced
-  // branches.
-  //
-  // A return value of null indicates that the status can't be determined.
-  Future<bool?> _updateIsIn(Branch? branch) {
-    if (branch == null) {
-      return Future.value(null);
+  // TODO(justinmc): Need the emoji package or icons or something. Not good with
+  // the default font in use.
+  String _isInToEmoji(bool? isIn) {
+    if (isIn == null) {
+      return '⌛';
     }
-    return _isIn(branch).then((final bool? isInBranch) {
-      if (isInBranch == true && !_branchesIsIn.contains(branch.branchName)) {
-        setState(() {
-          _branchesIsIn.add(branch.branchName);
-          if (branch.branchName == BranchNames.master) {
-            return;
-          }
-          _branchesIsIn.add(BranchNames.master);
-          if (branch.branchName == BranchNames.beta) {
-            return;
-          }
-          _branchesIsIn.add(BranchNames.beta);
-        });
-      } else if (isInBranch == false && _branchesIsIn.contains(branch.branchName)) {
-        setState(() {
-          _branchesIsIn.remove(branch.branchName);
-        });
-      }
-      return isInBranch;
-    }).catchError((error) {
-      print(error);
-      setState(() {
-        _branchesIsIn.remove(branch.branchName);
-      });
-    });
-  }
-
-  void _updateIsIns() async {
-    if (await _updateIsIn(widget.stable) == true) {
-      return;
+    if (isIn) {
+      return '✔️';
     }
-    if (await _updateIsIn(widget.beta) == true) {
-      return;
-    }
-    _updateIsIn(widget.master);
-  }
-
-  Future<bool?> _isIn(final Branch? branch) async {
-    if (widget.pr.status != PRStatus.merged || widget.pr.mergeCommitSHA == null
-        || widget.pr.rollPR == null || widget.pr.rollPR!.mergeCommitSHA == null) {
-      return false;
-    }
-
-    if (branch == null) {
-      return null;
-    }
-    return api.isIn(widget.pr.rollPR!.mergeCommitSHA!, branch.sha);
-  }
-
-  @override
-  void initState() {
-    // TODO(justinmc): Cache this isin data.
-    _updateIsIns();
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(final _EnginePRPage oldWidget) {
-    _updateIsIns();
-    super.didUpdateWidget(oldWidget);
+    return '❌';
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO(justinmc): Actually I need this elsewhere, not in build...
-    final Branches branches = ref.watch(branchesProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Engine PR ${widget.pr.title}'),
-      ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Text('#${widget.pr.number} by ${widget.pr.user}'),
-            if (widget.pr.status == PRStatus.open)
-              const Text('Open'),
-            if (widget.pr.status == PRStatus.draft)
-              const Text('Draft'),
-            if (widget.pr.status == PRStatus.merged)
-              const Text('Merged'),
-            if (widget.pr.status == PRStatus.closed)
-              const Text('Closed'),
-            if (widget.pr.status == PRStatus.merged)
-              // TODO(justinmc): More detail and prettier than just outputting the Set.
-              Text('This PR is in the following release channels: ${_branchesIsIn.map((BranchNames name) => name.name)}'),
-            // TODO(justinmc): URL launcher Text(''),
-            Link(
-              text: 'View on Github',
-              url: widget.pr.htmlURL,
-            ),
-            if (widget.pr.status == PRStatus.merged)
-              Text('${widget.pr.mergeCommitSHA} merged at ${widget.pr.mergedAt} into branch ${widget.pr.branch}.'),
-            // TODO(justinmc): Add a disclaimer that this doesn't consider reverts.
-          ],
-        ),
+    return SizedBox(
+      width: 120.0,
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              const SelectableText('master: '),
+              SelectableText(_isInToEmoji(isInMaster)),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              const SelectableText('beta: '),
+              SelectableText(_isInToEmoji(isInBeta)),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              const SelectableText('stable: '),
+              SelectableText(_isInToEmoji(isInStable)),
+            ],
+          ),
+        ],
       ),
     );
   }
