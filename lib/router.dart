@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,18 +39,18 @@ class ReleasesRoutePath {
 
 class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRoutePath> {
   @override
-  Future<ReleasesRoutePath> parseRouteInformation(RouteInformation routeInformation) async {
+  SynchronousFuture<ReleasesRoutePath> parseRouteInformation(RouteInformation routeInformation) {
     final uri = Uri.parse(routeInformation.location!);
 
     // Handle '/'
     if (uri.pathSegments.isEmpty) {
-      return ReleasesRoutePath.home();
+      return SynchronousFuture(ReleasesRoutePath.home());
     }
 
     // Handle '/pr/engineorframework/:prNumber'
     if (uri.pathSegments.length == 3) {
       if (uri.pathSegments[0] != 'pr') {
-        return ReleasesRoutePath.unknown();
+        return SynchronousFuture(ReleasesRoutePath.unknown());
       }
 
       if (uri.pathSegments[1] == 'engine') {
@@ -57,26 +58,26 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
         try {
           prNumber = int.parse(uri.pathSegments[2]);
         } catch (error) {
-          return ReleasesRoutePath.unknown();
+          return SynchronousFuture(ReleasesRoutePath.unknown());
         }
 
-        return ReleasesRoutePath.enginePR(prNumber);
+        return SynchronousFuture(ReleasesRoutePath.enginePR(prNumber));
       } else if (uri.pathSegments[1] == 'framework') {
         late final int prNumber;
         try {
           prNumber = int.parse(uri.pathSegments[1]);
         } catch (error) {
-          return ReleasesRoutePath.unknown();
+          return SynchronousFuture(ReleasesRoutePath.unknown());
         }
 
-        return ReleasesRoutePath.frameworkPR(prNumber);
+        return SynchronousFuture(ReleasesRoutePath.frameworkPR(prNumber));
       }
 
-      return ReleasesRoutePath.unknown();
+      return SynchronousFuture(ReleasesRoutePath.unknown());
     }
 
     // Handle unknown routes
-    return ReleasesRoutePath.unknown();
+    return SynchronousFuture(ReleasesRoutePath.unknown());
   }
 
   @override
@@ -103,7 +104,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   ReleasesRouterDelegate({
     this.enginePR,
     this.frameworkPR,
-    this.page = ReleasesPage.home,
+    //this.page = ReleasesPage.home,
     required this.ref,
   }) : navigatorKey = GlobalKey<NavigatorState>();
 
@@ -112,28 +113,28 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
   final WidgetRef ref;
 
-  ReleasesPage page;
+  ReleasesPage? page;
   PR? frameworkPR;
   EnginePR? enginePR;
   Branch? stable;
   Branch? beta;
   Branch? master;
+  int? loadingPRNumber;
 
   @override
   ReleasesRoutePath get currentConfiguration {
     if (page == ReleasesPage.unknown) {
       return ReleasesRoutePath.unknown();
     }
-    assert(!(page == ReleasesPage.frameworkPR && frameworkPR == null));
-    assert(!(page == ReleasesPage.enginePR && enginePR == null));
     switch (page) {
       case ReleasesPage.home:
         return ReleasesRoutePath.home();
       case ReleasesPage.frameworkPR:
-        return ReleasesRoutePath.frameworkPR(frameworkPR!.number);
+        return ReleasesRoutePath.frameworkPR(frameworkPR?.number ?? loadingPRNumber!);
       case ReleasesPage.enginePR:
-        return ReleasesRoutePath.enginePR(enginePR!.number);
+        return ReleasesRoutePath.enginePR(enginePR?.number ?? loadingPRNumber);
       case ReleasesPage.unknown:
+      case null:
         return ReleasesRoutePath.unknown();
     }
   }
@@ -167,6 +168,16 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   }
   */
 
+  Future<void> _getBranches() async {
+    // TODO(justinmc): Do I still need the local branches variables or just use the provider?
+    stable = await api.getBranch(BranchNames.stable);
+    ref.read(branchesProvider.notifier).stable = stable;
+    beta = await api.getBranch(BranchNames.beta);
+    ref.read(branchesProvider.notifier).beta = beta;
+    master = await api.getBranch(BranchNames.master);
+    ref.read(branchesProvider.notifier).master = master;
+  }
+
   @override
   Future<void> setNewRoutePath(final ReleasesRoutePath configuration) async {
     if (configuration.page == ReleasesPage.unknown) {
@@ -176,52 +187,42 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       return;
     }
 
-    try {
-      // TODO(justinmc): Do I still need the local branches variables or just use the provider?
-      print('justin getting stable...');
-      stable = await api.getBranch(BranchNames.stable);
-      print('justin got stable $stable');
-      ref.read(branchesProvider.notifier).stable = stable;
-      beta = await api.getBranch(BranchNames.beta);
-      ref.read(branchesProvider.notifier).beta = beta;
-      master = await api.getBranch(BranchNames.master);
-      ref.read(branchesProvider.notifier).master = master;
-    } catch (error) {
-      print(error);
-      // TODO(justinmc): Actually this should be an error on the home page.
-      page = ReleasesPage.unknown;
-      return;
-    }
-
     if (configuration.page == ReleasesPage.enginePR) {
-      page = ReleasesPage.enginePR;
-
       if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
         return;
       }
+      page = ReleasesPage.enginePR;
 
       try {
+        _getBranches();
+        loadingPRNumber = configuration.prNumber!;
         enginePR = await api.getEnginePR(configuration.prNumber!);
+        loadingPRNumber = null;
       } catch (error) {
         page = ReleasesPage.unknown;
+        return;
       }
       frameworkPR = null;
       return;
     }
 
     if (configuration.page == ReleasesPage.frameworkPR) {
-      page = ReleasesPage.frameworkPR;
-
       if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
         return;
       }
+      page = ReleasesPage.frameworkPR;
 
       try {
+        _getBranches();
+        loadingPRNumber = configuration.prNumber!;
         frameworkPR = await api.getPr(configuration.prNumber!);
+        loadingPRNumber = null;
       } catch (error) {
+        loadingPRNumber = null;
         page = ReleasesPage.unknown;
+        return;
       }
       enginePR = null;
       return;
@@ -251,11 +252,11 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           ),
         if (page == ReleasesPage.enginePR)
           PRPage(
-            pr: enginePR!,
+            pr: enginePR,
           ),
         if (page == ReleasesPage.frameworkPR)
           PRPage(
-            pr: frameworkPR!,
+            pr: frameworkPR,
           ),
       ],
       onPopPage: (Route<dynamic> route, dynamic result) {

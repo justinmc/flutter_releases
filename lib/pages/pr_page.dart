@@ -19,7 +19,7 @@ class PRPage extends MaterialPage {
     ),
   );
 
-  final PR pr;
+  final PR? pr;
 }
 
 class _PRPage extends ConsumerStatefulWidget {
@@ -28,7 +28,7 @@ class _PRPage extends ConsumerStatefulWidget {
     required this.pr,
   }) : super(key: key);
 
-  final PR pr;
+  final PR? pr;
 
   @override
   _PRPageState createState() => _PRPageState();
@@ -38,7 +38,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
 
   void _onTapGithub() async {
-    if (!await launch(widget.pr.htmlURL)) throw 'Could not launch ${widget.pr.htmlURL}';
+    if (!await launch(widget.pr!.htmlURL)) throw 'Could not launch ${widget.pr!.htmlURL}';
   }
 
   // Check if the PR is in the given branch and update _branchesIsIn.
@@ -51,7 +51,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
     if (branch == null) {
       return Future.value(null);
     }
-    return _isIn(branch).then((final bool? isInBranch) {
+    return _fetchIsIn(branch).then((final bool? isInBranch) {
       if (isInBranch == true && !_branchesIsIn.contains(branch.branchName)) {
         setState(() {
           _branchesIsIn.add(branch.branchName);
@@ -89,7 +89,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
     _updateIsIn(branches.master);
   }
 
-  Future<bool?> _enginePRIsIn(final Branch? branch) async {
+  Future<bool?> _fetchEnginePRIsIn(final Branch? branch) async {
     final EnginePR pr = widget.pr as EnginePR;
 
     if (pr.status != PRStatus.merged || pr.mergeCommitSHA == null
@@ -103,22 +103,30 @@ class _PRPageState extends ConsumerState<_PRPage> {
     return api.isIn(pr.rollPR!.mergeCommitSHA!, branch.sha);
   }
 
-  Future<bool?> _isIn(final Branch? branch) async {
+  Future<bool?> _fetchIsIn(final Branch? branch) async {
     if (widget.pr is EnginePR) {
-      return _enginePRIsIn(branch);
+      return _fetchEnginePRIsIn(branch);
     }
-    return _frameworkPRIsIn(branch);
+    return _fetchFrameworkPRIsIn(branch);
   }
 
-  Future<bool?> _frameworkPRIsIn(final Branch? branch) async {
-    if (widget.pr.status != PRStatus.merged || widget.pr.mergeCommitSHA == null) {
-      return false;
-    }
-
-    if (branch == null) {
+  Future<bool?> _fetchFrameworkPRIsIn(final Branch? branch) async {
+    if (widget.pr == null || branch == null) {
       return null;
     }
-    return api.isIn(widget.pr.mergeCommitSHA!, branch.sha);
+    if (widget.pr!.status != PRStatus.merged || widget.pr!.mergeCommitSHA == null) {
+      return false;
+    }
+    return api.isIn(widget.pr!.mergeCommitSHA!, branch.sha);
+  }
+
+  // Returns null if still loading the branch or the PR, true if the PR is in
+  // the branch, and false otherwise.
+  bool? _isIn(Branch? branch) {
+    if (widget.pr == null || branch == null) {
+      return null;
+    }
+    return _branchesIsIn.contains(branch.branchName);
   }
 
   @override
@@ -138,9 +146,18 @@ class _PRPageState extends ConsumerState<_PRPage> {
   Widget build(BuildContext context) {
     final Branches branches = ref.watch(branchesProvider);
 
+    if (widget.pr == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.pr is EnginePR ? 'Engine' : 'Framework'} PR ${widget.pr.title}'),
+        title: Text('${widget.pr is EnginePR ? 'Engine' : 'Framework'} PR ${widget.pr!.title}'),
       ),
       body: Center(
         child: Column(
@@ -150,33 +167,30 @@ class _PRPageState extends ConsumerState<_PRPage> {
               child: Row(
                 children: <Widget>[
                   Link(
-                    text: '#${widget.pr.number}',
-                    url: widget.pr.htmlURL,
+                    text: '#${widget.pr!.number}',
+                    url: widget.pr!.htmlURL,
                   ),
                   const Text(' by '),
                   Link(
-                    text: widget.pr.user,
-                    url: 'https://www.github.com/${widget.pr.user}',
+                    text: widget.pr!.user,
+                    url: 'https://www.github.com/${widget.pr!.user}',
                   ),
                 ],
               ),
             ),
-            if (widget.pr.status == PRStatus.open)
+            if (widget.pr!.status == PRStatus.open)
               const Text('Open'),
-            if (widget.pr.status == PRStatus.draft)
+            if (widget.pr!.status == PRStatus.draft)
               const Text('Draft'),
-            if (widget.pr.status == PRStatus.merged)
+            if (widget.pr!.status == PRStatus.merged)
               const Text('Merged'),
-            if (widget.pr.status == PRStatus.closed)
+            if (widget.pr!.status == PRStatus.closed)
               const Text('Closed'),
-            if (widget.pr.status == PRStatus.merged)
+            if (widget.pr!.status == PRStatus.merged)
               _BranchesIn(
-                // TODO(justinmc): This isn't quite right. If the PR hasn't
-                // loaded yet but the branch has, then it will think that the PR
-                // isn't in the branch.
-                isInStable: branches.stable == null ? null : _branchesIsIn.contains(BranchNames.stable),
-                isInBeta: branches.beta == null ? null : _branchesIsIn.contains(BranchNames.beta),
-                isInMaster: branches.master == null ? null : _branchesIsIn.contains(BranchNames.master),
+                isInStable: _isIn(branches.stable),
+                isInBeta: _isIn(branches.beta),
+                isInMaster: _isIn(branches.master),
               ),
             // TODO(justinmc): URL launcher Text(''),
             TextButton(
@@ -186,8 +200,8 @@ class _PRPageState extends ConsumerState<_PRPage> {
               onPressed: _onTapGithub,
               child: const Text('View on Github'),
             ),
-            if (widget.pr.status == PRStatus.merged)
-              Text('${widget.pr.mergeCommitSHA} merged at ${widget.pr.mergedAt} into branch ${widget.pr.branch}.'),
+            if (widget.pr!.status == PRStatus.merged)
+              Text('${widget.pr!.mergeCommitSHA} merged at ${widget.pr!.mergedAt} into branch ${widget.pr!.branch}.'),
             // TODO(justinmc): Add a disclaimer that this doesn't consider reverts.
           ],
         ),
