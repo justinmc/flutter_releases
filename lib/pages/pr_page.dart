@@ -36,6 +36,7 @@ class _PRPage extends ConsumerStatefulWidget {
 
 class _PRPageState extends ConsumerState<_PRPage> {
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
+  bool _finishedLoadingIsIns = false;
 
   void _onTapGithub() async {
     if (!await launch(widget.pr!.htmlURL)) throw 'Could not launch ${widget.pr!.htmlURL}';
@@ -78,7 +79,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
     });
   }
 
-  void _updateIsIns() async {
+  Future<void> _updateIsIns() async {
     final Branches branches = ref.read(branchesProvider);
     if (await _updateIsIn(branches.stable) == true) {
       return;
@@ -86,7 +87,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
     if (await _updateIsIn(branches.beta) == true) {
       return;
     }
-    _updateIsIn(branches.master);
+    await _updateIsIn(branches.master);
   }
 
   Future<bool?> _fetchEnginePRIsIn(final Branch? branch) async {
@@ -123,22 +124,32 @@ class _PRPageState extends ConsumerState<_PRPage> {
   // Returns null if still loading the branch or the PR, true if the PR is in
   // the branch, and false otherwise.
   bool? _isIn(Branch? branch) {
-    if (widget.pr == null || branch == null) {
+    if (widget.pr == null || branch == null || !_finishedLoadingIsIns) {
       return null;
     }
+    print('justin is in? $branch in $_branchesIsIn');
     return _branchesIsIn.contains(branch.branchName);
   }
 
   @override
   void initState() {
     // TODO(justinmc): Cache this isin data.
-    _updateIsIns();
+    _updateIsIns().then((_) {
+      setState(() {
+        _finishedLoadingIsIns = true;
+      });
+    });
     super.initState();
   }
 
   @override
   void didUpdateWidget(final _PRPage oldWidget) {
-    _updateIsIns();
+    // TODO(justinmc): Does this always need to be updated?
+    _updateIsIns().then((_) {
+      setState(() {
+        _finishedLoadingIsIns = true;
+      });
+    });
     super.didUpdateWidget(oldWidget);
   }
 
