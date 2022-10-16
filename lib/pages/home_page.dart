@@ -29,11 +29,11 @@ class HomePage extends MaterialPage {
 class _HomePage extends StatefulWidget {
   const _HomePage({
     Key? key,
-    required final this.onNavigateToEnginePR,
-    required final this.onNavigateToFrameworkPR,
-    final this.stable,
-    final this.beta,
-    final this.master,
+    required this.onNavigateToEnginePR,
+    required this.onNavigateToFrameworkPR,
+    this.stable,
+    this.beta,
+    this.master,
   }) : super(key: key);
 
   final EnginePRCallback onNavigateToEnginePR;
@@ -60,8 +60,17 @@ class _HomePageState extends State<_HomePage> {
       _loading = true;
     });
 
-    final int engineLocation = input.lastIndexOf(_kEngineString);
     late PR localFrameworkPR;
+
+    /*
+    // TODO(justinmc): Accept a plain framework PR number, not a full Github url.
+    try {
+      final int prNumber = int.parse(input);
+      localFrameworkPR = await api.getPr(prNumber);
+    } catch (error) {}
+    */
+
+    final int engineLocation = input.lastIndexOf(_kEngineString);
     late EnginePR localEnginePR;
     final bool isEngine = engineLocation >= 0;
 
