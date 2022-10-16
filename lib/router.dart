@@ -195,7 +195,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       page = ReleasesPage.enginePR;
 
       try {
-        _getBranches();
+        await _getBranches();
         loadingPRNumber = configuration.prNumber!;
         enginePR = await api.getEnginePR(configuration.prNumber!);
         loadingPRNumber = null;
@@ -215,8 +215,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       page = ReleasesPage.frameworkPR;
 
       try {
-        _getBranches();
         loadingPRNumber = configuration.prNumber!;
+        await _getBranches();
         frameworkPR = await api.getPr(configuration.prNumber!);
         loadingPRNumber = null;
       } catch (error) {
@@ -231,6 +231,12 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     enginePR = null;
     frameworkPR = null;
     page = ReleasesPage.home;
+    try {
+      await _getBranches();
+    } catch (error) {
+      page = ReleasesPage.unknown;
+      return;
+    }
   }
 
   @override
