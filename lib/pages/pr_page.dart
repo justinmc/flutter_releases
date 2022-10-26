@@ -127,7 +127,6 @@ class _PRPageState extends ConsumerState<_PRPage> {
     if (widget.pr == null || branch == null || !_finishedLoadingIsIns) {
       return null;
     }
-    print('justin is in? $branch in $_branchesIsIn');
     return _branchesIsIn.contains(branch.branchName);
   }
 
@@ -256,6 +255,11 @@ class _BranchesIn extends StatelessWidget {
             children: <Widget>[
               const SelectableText('master: '),
               SelectableText(_isInToEmoji(isInMaster)),
+              // TODO(justinmc): Display at what version the PR made it into
+              // each channel. Can you figure that out based on the tags on the
+              // merge commit?
+              // Actually, won't the version number be the same for each
+              // channel?
             ],
           ),
           Row(

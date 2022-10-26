@@ -26,6 +26,7 @@ Future<PR> getPr(final int prNumber) async {
 
   return PR.fromJSON(jsonDecode(prResponse.body));
   /*
+  final PR pr = PR.fromJSON(jsonDecode(prResponse.body));
   if (pr.mergeCommitSHA == '' || pr.mergedAt == '') {
     throw ArgumentError('PR "$prNumber" not yet merged.');
   }
