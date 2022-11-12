@@ -83,10 +83,24 @@ Future<Branch> getBranch(BranchNames name) async {
   final http.Response branchResponse = await _getBranch(name.name);
 
   if (branchResponse.statusCode != 200) {
+    // TODO(justinmc): Capture the error message and display it on the error page.
     throw ArgumentError("Couldn't get the branch $name.");
   }
 
-  return Branch.fromJSON(jsonDecode(branchResponse.body));
+  //print(branchResponse.body);
+  //return Branch.fromJSON(jsonDecode(branchResponse.body));
+
+  final Branch branch = Branch.fromJSON(jsonDecode(branchResponse.body));
+  final http.Response tagResponse = await _getTag(branch.sha);
+  if (tagResponse.statusCode != 200) {
+    print(tagResponse.body);
+    throw ArgumentError("Couldn't get the tag for SHA ${branch.sha}");
+  }
+
+  print('justin tag ${tagResponse.body}');
+
+
+  return branch;
 }
 
 // Returns true iff sha is in the branch given by isInSha.
@@ -126,6 +140,13 @@ Future<http.Response> _getPR(final int prNumber, [String url = kAPIFramework]) {
 
 Future<http.Response> _getBranch(final String branchName) {
   return http.get(Uri.parse('$kAPIFramework/branches/$branchName'));
+}
+
+Future<http.Response> _getTag(String tagSha) {
+  //return http.get(Uri.parse('$kAPIFramework/git/tags/$tagSha'));
+  // TODO(justinmc): Rate limited. Not sure how to get latest tags here, or if
+  // this even has the latest releases!
+  return http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=2'));
 }
 
 Future<http.Response> _compare(final String sha1, final String sha2) {
