@@ -32,7 +32,7 @@ class _UnknownPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text("Sorry, this page doesn't exist!"),
-            Link(
+            Link.tap(
               text: 'Return home',
               onTap: onNavigateHome,
             ),

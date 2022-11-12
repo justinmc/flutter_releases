@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../api.dart' as api;
 import '../models/branch.dart';
 import '../models/pr.dart';
+import '../widgets/link.dart';
 
 typedef EnginePRCallback = void Function(EnginePR pr);
 typedef PRCallback = void Function(PR pr);
@@ -117,7 +119,17 @@ class _HomePageState extends State<_HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // TODO(justinmc): Link to docs releases: https://docs.flutter.dev/development/tools/sdk/releases
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text('Latest '),
+                Link(
+                  text: 'releases',
+                  uri: Uri.parse('https://docs.flutter.dev/development/tools/sdk/releases'),
+                ),
+                const Text(':'),
+              ]
+            ),
             if (widget.stable == null)
               const Text('Loading stable release...'),
             if (widget.beta == null)
@@ -130,13 +142,11 @@ class _HomePageState extends State<_HomePage> {
               _Branch(branch: widget.beta!),
             if (widget.master != null)
               _Branch(branch: widget.master!),
-            // From: https://docs.flutter.dev/development/tools/sdk/releases
-            const Text('Enter a PR URL from the framework or engine.'),
             // TODO(justinmc): Loading state.
             TextField(
               enabled: !_loading,
               decoration: InputDecoration(
-                hintText: 'Github PR URL',
+                hintText: 'Github PR URL (framework or engine)',
                 errorText: _error,
               ),
               onSubmitted: _onSubmittedPR,
@@ -158,7 +168,20 @@ class _Branch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(justinmc): Link this stuff.
-    return Text('${branch.name}:  ${branch.sha} released ${branch.date}');
+    // TODO(justinmc): Version numbers!
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(branch.name),
+        const Text(' ('),
+        Link(
+          text: branch.shortSha,
+          uri: branch.uri,
+        ),
+        const Text(') '),
+        // TODO(justinmc): Readable date.
+        Text('released ${branch.date}'),
+      ],
+    );
   }
 }

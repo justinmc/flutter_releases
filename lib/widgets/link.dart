@@ -6,22 +6,33 @@ import 'package:url_launcher/url_launcher.dart';
 /// Similar to an <a> tag in HTML.
 class Link extends StatelessWidget {
   const Link({
-    Key? key,
+    super.key,
     required this.text,
-    this.url,
-    this.onTap,
-  }) : assert((url == null) != (onTap == null)),
-       super(key: key);
+    this.uri,
+  }) : onTap = null;
+
+  Link.fromString({
+    super.key,
+    required this.text,
+    required String url,
+  }) : onTap = null,
+      uri = Uri.parse(url);
+
+  const Link.tap({
+    super.key,
+    required this.text,
+    required this.onTap,
+  }) : uri = null;
 
   final String text;
-  final String? url;
+  final Uri? uri;
   final VoidCallback? onTap;
 
   void _onTap() async {
     if (onTap != null) {
       return onTap!();
     }
-    if (!await launch(url!)) throw 'Could not launch $url.';
+    if (!await launchUrl(uri!)) throw 'Could not launch $uri.';
   }
 
   @override

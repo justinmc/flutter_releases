@@ -176,12 +176,12 @@ class _PRPageState extends ConsumerState<_PRPage> {
               width: 200.0,
               child: Row(
                 children: <Widget>[
-                  Link(
+                  Link.fromString(
                     text: '#${widget.pr!.number}',
                     url: widget.pr!.htmlURL,
                   ),
                   const Text(' by '),
-                  Link(
+                  Link.fromString(
                     text: widget.pr!.user,
                     url: 'https://www.github.com/${widget.pr!.user}',
                   ),
