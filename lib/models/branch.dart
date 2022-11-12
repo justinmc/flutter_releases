@@ -30,6 +30,12 @@ class Branch {
 
   String get shortSha => sha.substring(0, 7);
 
+  String get formattedDate {
+    final DateTime localTime = date.toLocal();
+
+    return '${localTime.year}-${localTime.month}-${localTime.day}';
+  }
+
   @override
   String toString() {
     return 'Branch {name: $name, sha: $sha, date: $date, uri: $uri}';

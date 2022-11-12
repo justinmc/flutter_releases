@@ -180,7 +180,7 @@ class _Branch extends StatelessWidget {
         ),
         const Text(') '),
         // TODO(justinmc): Readable date.
-        Text('released ${branch.date}'),
+        Text('released ${branch.formattedDate}'),
       ],
     );
   }
