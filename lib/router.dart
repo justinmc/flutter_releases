@@ -114,6 +114,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   final WidgetRef ref;
 
   ReleasesPage? page;
+  Object? error;
   PR? frameworkPR;
   EnginePR? enginePR;
   Branch? stable;
@@ -143,6 +144,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.home;
+    error = null;
     notifyListeners();
   }
 
@@ -150,6 +152,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = selectedPR;
     page = ReleasesPage.enginePR;
+    error = null;
     notifyListeners();
   }
 
@@ -157,6 +160,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = selectedPR;
     enginePR = null;
     page = ReleasesPage.frameworkPR;
+    error = null;
     notifyListeners();
   }
 
@@ -190,9 +194,11 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     if (configuration.page == ReleasesPage.enginePR) {
       if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
+        error = null;
         return;
       }
       page = ReleasesPage.enginePR;
+      error = null;
 
       try {
         await _getBranches();
@@ -202,6 +208,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       } catch (error) {
         print(error);
         page = ReleasesPage.unknown;
+        this.error = error;
         return;
       }
       frameworkPR = null;
@@ -211,9 +218,11 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     if (configuration.page == ReleasesPage.frameworkPR) {
       if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
+        error = 'No PR number given.';
         return;
       }
       page = ReleasesPage.frameworkPR;
+      error = null;
 
       try {
         loadingPRNumber = configuration.prNumber!;
@@ -224,6 +233,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         print(error);
         loadingPRNumber = null;
         page = ReleasesPage.unknown;
+        this.error = error;
         return;
       }
       enginePR = null;
@@ -238,8 +248,10 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     } catch (error) {
       print(error);
       page = ReleasesPage.unknown;
+      this.error = error;
       return;
     }
+    error = null;
   }
 
   @override
@@ -258,6 +270,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         if (page == ReleasesPage.unknown)
           UnknownPage(
             onNavigateHome: onNavigateHome,
+            error: error.toString(),
           ),
         if (page == ReleasesPage.enginePR)
           PRPage(
@@ -275,6 +288,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
         enginePR = null;
         frameworkPR = null;
+        error = null;
         page = ReleasesPage.home;
         notifyListeners();
 
