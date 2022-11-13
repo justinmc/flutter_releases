@@ -87,20 +87,16 @@ Future<Branch> getBranch(BranchNames name) async {
     throw ArgumentError("Couldn't get the branch $name.");
   }
 
-  //print(branchResponse.body);
-  //return Branch.fromJSON(jsonDecode(branchResponse.body));
-
   final Branch branch = Branch.fromJSON(jsonDecode(branchResponse.body));
-  final http.Response tagResponse = await _getTag(branch.sha);
-  if (tagResponse.statusCode != 200) {
-    print(tagResponse.body);
-    throw ArgumentError("Couldn't get the tag for SHA ${branch.sha}");
+
+  // Master has no version tag. Otherwise find the version tag name.
+  if (branch.branchName == BranchNames.master) {
+    return branch;
   }
 
-  print('justin tag ${tagResponse.body}');
+  final String tagName = await _getTag(branch.sha);
 
-
-  return branch;
+  return branch.copyWith(tagName: tagName);
 }
 
 // Returns true iff sha is in the branch given by isInSha.
@@ -142,11 +138,27 @@ Future<http.Response> _getBranch(final String branchName) {
   return http.get(Uri.parse('$kAPIFramework/branches/$branchName'));
 }
 
-Future<http.Response> _getTag(String tagSha) {
-  //return http.get(Uri.parse('$kAPIFramework/git/tags/$tagSha'));
-  // TODO(justinmc): Rate limited. Not sure how to get latest tags here, or if
-  // this even has the latest releases!
-  return http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=2'));
+Future<String> _getTag(String sha) async {
+  // These per_page and page values are hacks. The latest tags happen to be on
+  // this page more or less because it's in alphanumeric order, and we
+  // originally tagged with "v1.x" and later removed the "v", so the first pages
+  // are full of old tags.
+  final http.Response response = await http.get(Uri.parse('$kAPIFramework/tags?per_page=50&page=7'));
+
+  if (response.statusCode != 200) {
+    throw ArgumentError("Couldn't get the tag for sha $sha.");
+  }
+
+  final List<dynamic> json = jsonDecode(response.body);
+
+  for (Map<String, dynamic> jsonTag in json) {
+    final String jsonSha = jsonTag['commit']['sha'];
+    if (jsonSha == sha) {
+      return jsonTag['name'];
+    }
+  }
+
+  throw ArgumentError('No tag found for sha $sha.');
 }
 
 Future<http.Response> _compare(final String sha1, final String sha2) {

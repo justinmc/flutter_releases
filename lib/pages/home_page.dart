@@ -168,18 +168,21 @@ class _Branch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(justinmc): Version numbers!
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Text(branch.name),
+        if (branch.tagName != null)
+          Link(
+            text: branch.tagName!,
+            uri: branch.tagUri,
+          ),
         const Text(' ('),
         Link(
           text: branch.shortSha,
           uri: branch.uri,
         ),
         const Text(') '),
-        // TODO(justinmc): Readable date.
         Text('released ${branch.formattedDate}'),
       ],
     );
