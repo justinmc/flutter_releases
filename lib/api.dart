@@ -143,7 +143,7 @@ Future<String> _getTag(String sha) async {
   // this page more or less because it's in alphanumeric order, and we
   // originally tagged with "v1.x" and later removed the "v", so the first pages
   // are full of old tags.
-  final http.Response response = await http.get(Uri.parse('$kAPIFramework/tags?per_page=50&page=7'));
+  final http.Response response = await http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=4'));
 
   if (response.statusCode != 200) {
     throw ArgumentError("Couldn't get the tag for sha $sha.");
