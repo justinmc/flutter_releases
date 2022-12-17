@@ -270,7 +270,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         if (page == ReleasesPage.unknown)
           UnknownPage(
             onNavigateHome: onNavigateHome,
-            error: error.toString(),
+            error: error?.toString(),
           ),
         if (page == ReleasesPage.enginePR)
           PRPage(
