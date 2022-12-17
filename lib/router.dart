@@ -140,10 +140,22 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     }
   }
 
-  void onNavigateHome() {
+  void onNavigateHome() async {
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.home;
+
+    if (stable == null || beta == null || master == null) {
+      try {
+        await _getBranches();
+      } catch (error) {
+        print(error);
+        page = ReleasesPage.unknown;
+        this.error = error;
+        return;
+      }
+    }
+
     error = null;
     notifyListeners();
   }
