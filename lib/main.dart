@@ -34,6 +34,7 @@ class _ReleasesAppState extends ConsumerState<ReleasesApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       restorationScopeId: 'root',
       routerDelegate: _routerDelegate,
       routeInformationParser: _routeInformationParser,
