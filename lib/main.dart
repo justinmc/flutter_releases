@@ -17,7 +17,7 @@ class ReleasesApp extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  _ReleasesAppState createState() => _ReleasesAppState();
+  ConsumerState<ReleasesApp> createState() => _ReleasesAppState();
 }
 
 class _ReleasesAppState extends ConsumerState<ReleasesApp> {

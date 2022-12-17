@@ -39,7 +39,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
   bool _finishedLoadingIsIns = false;
 
   void _onTapGithub() async {
-    if (!await launch(widget.pr!.htmlURL)) throw 'Could not launch ${widget.pr!.htmlURL}';
+    if (!await launchUrl(Uri.parse(widget.pr!.htmlURL))) throw 'Could not launch ${widget.pr!.htmlURL}';
   }
 
   // Check if the PR is in the given branch and update _branchesIsIn.
@@ -76,6 +76,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
       setState(() {
         _branchesIsIn.remove(branch.branchName);
       });
+      return false;
     });
   }
 
