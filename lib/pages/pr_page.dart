@@ -212,7 +212,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
               child: const Text('View on Github'),
             ),
             if (widget.pr!.status == PRStatus.merged)
-              Text('${widget.pr!.mergeCommitSHA} merged at ${widget.pr!.mergedAt} into branch ${widget.pr!.branch}.'),
+              Text('${widget.pr!.mergeCommitSHA} merged at ${widget.pr!.formattedMergedAt} into branch ${widget.pr!.branch}.'),
             // TODO(justinmc): Add a disclaimer that this doesn't consider reverts.
           ],
         ),

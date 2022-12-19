@@ -21,7 +21,7 @@ class PR {
   PR.fromJSON(
     Map<String, dynamic> jsonMap,
   ) : mergeCommitSHA = jsonMap['merge_commit_sha'],
-      mergedAt = jsonMap['merged_at'],
+      mergedAt = jsonMap['merged_at'] == null ? null : DateTime.parse(jsonMap['merged_at']),
       branch = jsonMap['base']['ref'],
       number = jsonMap['number'],
       state = jsonMap['state'],
@@ -30,7 +30,7 @@ class PR {
       user = jsonMap['user']['login'];
 
   final String? mergeCommitSHA;
-  final String? mergedAt;
+  final DateTime? mergedAt;
   final String branch;
   final String htmlURL;
   final int number;
@@ -51,6 +51,16 @@ class PR {
       return PRStatus.closed;
     }
     return PRStatus.merged;
+  }
+
+  String? get formattedMergedAt {
+    if (mergedAt == null) {
+      return null;
+    }
+
+    final DateTime localTime = mergedAt!.toLocal();
+
+    return '${localTime.year}-${localTime.month}-${localTime.day}';
   }
 
   @override
