@@ -212,8 +212,33 @@ class _PRPageState extends ConsumerState<_PRPage> {
               child: const Text('View on Github'),
             ),
             if (widget.pr!.status == PRStatus.merged)
-              Text('${widget.pr!.mergeCommitSHA} merged at ${widget.pr!.formattedMergedAt} into branch ${widget.pr!.branch}.'),
-            // TODO(justinmc): Add a disclaimer that this doesn't consider reverts.
+              Text.rich(
+                TextSpan(
+                  children: <InlineSpan>[
+                    WidgetSpan(
+                      child: Link.fromString(
+                        text: widget.pr!.mergeCommitShortSHA!,
+                        url: '$kGitHubFlutter/commit/${widget.pr!.mergeCommitSHA}',
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' merged at ${widget.pr!.formattedMergedAt} into branch ',
+                    ),
+                    WidgetSpan(
+                      child: Link.fromString(
+                        text: widget.pr!.branch,
+                        url: '$kGitHubFlutter/tree/${widget.pr!.branch}',
+                      ),
+                    ),
+                    const TextSpan(
+                      text: '.',
+                    ),
+                  ],
+                ),
+              ),
+            if (widget.pr!.status == PRStatus.merged)
+              // TODO(justinmc): Can I find reverts of a PR and fix this?
+              Text('Note that this does not consider if this PR was reverted!'),
           ],
         ),
       ),

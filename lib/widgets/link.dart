@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const String kGitHub = 'https://www.github.com';
+const String kGitHubFlutter = '$kGitHub/flutter/flutter';
+
 /// Just a link.
 ///
 /// Similar to an <a> tag in HTML.

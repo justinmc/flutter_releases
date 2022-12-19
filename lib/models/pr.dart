@@ -63,6 +63,8 @@ class PR {
     return '${localTime.year}-${localTime.month}-${localTime.day}';
   }
 
+  String? get mergeCommitShortSHA => mergeCommitSHA?.substring(0, 7);
+
   @override
   String toString() {
     return 'PR {number: $number, mergeCommitSHA: $mergeCommitSHA, mergedAt: $mergedAt, branch: $branch, htmlURL: $htmlURL}';
