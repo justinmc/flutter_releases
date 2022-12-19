@@ -122,6 +122,13 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   Branch? master;
   int? loadingPRNumber;
 
+  // TODO(justinmc): When navigating back via the back button, where am I
+  // supposed to reload the new page's state? E.g. calling getBranches for
+  // navigating back to the home page from 404.
+
+  // TODO(justinmc): If I go to a PR page and then refresh, it redirects me to
+  // 404. Why?
+
   @override
   ReleasesRoutePath get currentConfiguration {
     if (page == ReleasesPage.unknown) {
@@ -180,7 +187,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   /*
   @override
   Future<void> setInitialRoutePath(ReleasesRoutePath configuration) {
-    return setNewRoutePath(configuration);
+    print('justin setInitialRoutePath $configuration');
+    return super.setInitialRoutePath(configuration);
+    //return setNewRoutePath(configuration);
   }
   */
 

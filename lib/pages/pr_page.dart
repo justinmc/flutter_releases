@@ -238,7 +238,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
               ),
             if (widget.pr!.status == PRStatus.merged)
               // TODO(justinmc): Can I find reverts of a PR and fix this?
-              Text('Note that this does not consider if this PR was reverted!'),
+              const Text('Note that this does not consider if this PR was reverted!'),
           ],
         ),
       ),
