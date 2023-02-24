@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_repo_info/widgets/github_login.dart';
+
 
 import '../api.dart' as api;
+import '../github_oauth_credentials.dart';
 import '../models/branch.dart';
 import '../models/pr.dart';
+import '../widgets/github_login.dart';
 import '../widgets/link.dart';
 
 typedef EnginePRCallback = void Function(EnginePR pr);
@@ -150,6 +154,26 @@ class _HomePageState extends State<_HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter Releases Info'),
+        actions: <Widget>[
+          GithubLoginWidget(
+            githubClientId: githubClientId,
+            githubClientSecret: githubClientSecret,
+            githubScopes: githubScopes,
+            builder: (BuildContext context, httpClient) {
+              return const SizedBox.shrink();
+            },
+          ),
+          /*
+          IconButton(
+            icon: const Icon(Icons.login),
+            tooltip: 'Login to GitGub',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('This is a snackbar')));
+            },
+          ),
+          */
+        ],
       ),
       body: Center(
         child: Column(

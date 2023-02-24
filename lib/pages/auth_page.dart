@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
 import '../widgets/link.dart';
 
-class UnknownPage extends MaterialPage {
-  UnknownPage({
+class AuthPage extends MaterialPage {
+  AuthPage({
     required final VoidCallback onNavigateHome,
+    required final String authCode,
     final String? error,
   }) : super(
-    key: const ValueKey('UnknownPage'),
+    key: const ValueKey('AuthPage'),
     restorationId: 'auth-page',
-    child: _UnknownPage(
+    child: _AuthPage(
+      authCode: authCode,
       onNavigateHome: onNavigateHome,
-      error: error,
     ),
   );
 }
 
-class _UnknownPage extends StatelessWidget {
-  const _UnknownPage({
+class _AuthPage extends StatelessWidget {
+  const _AuthPage({
     Key? key,
+    required this.authCode,
     required this.onNavigateHome,
-    this.error,
   }) : super(key: key);
 
+  final String authCode;
   final VoidCallback onNavigateHome;
-  final String? error;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('404'),
+        title: const Text('Authentication'),
       ),
       body: Center(
         child: Padding(
@@ -37,10 +38,7 @@ class _UnknownPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if (error != null)
-                Text(error!),
-              if (error == null)
-                const Text("Sorry, this page doesn't exist!"),
+              const Text('Authenticating...'),
               Link.tap(
                 text: 'Return home',
                 onTap: onNavigateHome,

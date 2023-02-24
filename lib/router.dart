@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'models/pr.dart';
 import 'models/branch.dart';
+import 'pages/auth_page.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
@@ -12,6 +13,7 @@ import 'providers/branches_provider.dart';
 import 'api.dart' as api;
 
 enum ReleasesPage {
+  auth,
   unknown,
   home,
   dartPR,
@@ -22,33 +24,53 @@ enum ReleasesPage {
 class ReleasesRoutePath {
   final int? prNumber;
   final ReleasesPage page;
+  final String? authCode;
 
   ReleasesRoutePath.home()
       : prNumber = null,
+        authCode = null,
         page = ReleasesPage.home;
 
   ReleasesRoutePath.enginePR(this.prNumber)
-      : page = ReleasesPage.enginePR;
+      : page = ReleasesPage.enginePR,
+        authCode = null;
 
   ReleasesRoutePath.dartPR(this.prNumber)
-      : page = ReleasesPage.dartPR;
+      : page = ReleasesPage.dartPR,
+        authCode = null;
 
   ReleasesRoutePath.frameworkPR(this.prNumber)
-      : page = ReleasesPage.frameworkPR;
+      : page = ReleasesPage.frameworkPR,
+        authCode = null;
+
+  ReleasesRoutePath.auth(this.authCode)
+      : prNumber = null,
+        page = ReleasesPage.auth;
 
   ReleasesRoutePath.unknown()
       : prNumber = null,
+        authCode = null,
         page = ReleasesPage.unknown;
 }
 
 class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRoutePath> {
   @override
   SynchronousFuture<ReleasesRoutePath> parseRouteInformation(RouteInformation routeInformation) {
-    final uri = Uri.parse(routeInformation.location!);
+    final Uri uri = Uri.parse(routeInformation.location!);
 
     // Handle '/'
     if (uri.pathSegments.isEmpty) {
       return SynchronousFuture(ReleasesRoutePath.home());
+    }
+
+    // Handle '/auth'
+    print('justin what $uri');
+    if (uri.pathSegments[0] == 'auth') {
+      final String? code = uri.queryParameters['code'];
+      if (code == null || code.isEmpty) {
+        return SynchronousFuture(ReleasesRoutePath.unknown());
+      }
+      return SynchronousFuture(ReleasesRoutePath.auth(code));
     }
 
     // Handle '/pr/engineorframework/:prNumber'
@@ -92,6 +114,9 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
     if (configuration.page == ReleasesPage.home) {
       return const RouteInformation(location: '/');
     }
+    if (configuration.page == ReleasesPage.auth) {
+      return RouteInformation(location: '/auth?code=${configuration.authCode}');
+    }
     if (configuration.page == ReleasesPage.frameworkPR) {
       return RouteInformation(location: '/pr/framework/${configuration.prNumber}');
     }
@@ -106,6 +131,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<ReleasesRoutePath> {
 
   ReleasesRouterDelegate({
+    this.authCode,
     this.dartPR,
     this.enginePR,
     this.frameworkPR,
@@ -127,6 +153,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   Branch? beta;
   Branch? master;
   int? loadingPRNumber;
+  String? authCode;
 
   // TODO(justinmc): When navigating back via the back button, where am I
   // supposed to reload the new page's state? E.g. calling getBranches for
@@ -143,6 +170,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     switch (page) {
       case ReleasesPage.home:
         return ReleasesRoutePath.home();
+      case ReleasesPage.auth:
+        return ReleasesRoutePath.auth(authCode);
       case ReleasesPage.frameworkPR:
         return ReleasesRoutePath.frameworkPR(frameworkPR?.number ?? loadingPRNumber!);
       case ReleasesPage.enginePR:
@@ -232,11 +261,21 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   @override
   Future<void> setNewRoutePath(final ReleasesRoutePath configuration) async {
     if (configuration.page == ReleasesPage.unknown) {
+      authCode = null;
       enginePR = null;
       frameworkPR = null;
       page = ReleasesPage.unknown;
       return;
     }
+
+    if (configuration.page == ReleasesPage.auth) {
+      enginePR = null;
+      frameworkPR = null;
+      page = ReleasesPage.auth;
+      authCode = configuration.authCode;
+      return;
+    }
+    authCode = null;
 
     if (configuration.page == ReleasesPage.enginePR) {
       if (configuration.prNumber == null) {
@@ -345,6 +384,11 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
             onNavigateHome: onNavigateHome,
             error: error?.toString(),
           ),
+        if (page == ReleasesPage.auth)
+          AuthPage(
+            authCode: authCode!,
+            onNavigateHome: onNavigateHome,
+          ),
         if (page == ReleasesPage.enginePR)
           PRPage(
             pr: enginePR,
@@ -359,6 +403,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           return false;
         }
 
+        authCode = null;
         enginePR = null;
         frameworkPR = null;
         error = null;
