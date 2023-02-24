@@ -14,6 +14,7 @@ import 'api.dart' as api;
 enum ReleasesPage {
   unknown,
   home,
+  dartPR,
   enginePR,
   frameworkPR,
 }
@@ -28,6 +29,9 @@ class ReleasesRoutePath {
 
   ReleasesRoutePath.enginePR(this.prNumber)
       : page = ReleasesPage.enginePR;
+
+  ReleasesRoutePath.dartPR(this.prNumber)
+      : page = ReleasesPage.dartPR;
 
   ReleasesRoutePath.frameworkPR(this.prNumber)
       : page = ReleasesPage.frameworkPR;
@@ -102,6 +106,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<ReleasesRoutePath> {
 
   ReleasesRouterDelegate({
+    this.dartPR,
     this.enginePR,
     this.frameworkPR,
     //this.page = ReleasesPage.home,
@@ -117,6 +122,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   Object? error;
   PR? frameworkPR;
   EnginePR? enginePR;
+  DartPR? dartPR;
   Branch? stable;
   Branch? beta;
   Branch? master;
@@ -141,6 +147,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         return ReleasesRoutePath.frameworkPR(frameworkPR?.number ?? loadingPRNumber!);
       case ReleasesPage.enginePR:
         return ReleasesRoutePath.enginePR(enginePR?.number ?? loadingPRNumber);
+      case ReleasesPage.dartPR:
+        return ReleasesRoutePath.dartPR(dartPR?.number ?? loadingPRNumber);
       case ReleasesPage.unknown:
       case null:
         return ReleasesRoutePath.unknown();
@@ -165,6 +173,24 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
     error = null;
     notifyListeners();
+  }
+
+  void onNavigateToDartGerritPR(String url) {
+    frameworkPR = null;
+    enginePR = null;
+    page = ReleasesPage.unknown;
+    error = "You've entered a Dart PR from Gerrit, which unfortunately isn't supported right now!  Your best bet is to find the engine Dart roll PR that contains the change you want, and paste in that URL (e.g. https://github.com/flutter/engine/pull/39767).";
+    notifyListeners();
+  }
+
+  void onNavigateToDartPR(DartPR selectedPR) {
+    /*
+    frameworkPR = null;
+    enginePR = selectedPR;
+    page = ReleasesPage.enginePR;
+    error = null;
+    notifyListeners();
+    */
   }
 
   void onNavigateToEnginePR(EnginePR selectedPR) {
@@ -236,6 +262,30 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       return;
     }
 
+    if (configuration.page == ReleasesPage.dartPR) {
+      if (configuration.prNumber == null) {
+        page = ReleasesPage.unknown;
+        error = null;
+        return;
+      }
+      page = ReleasesPage.dartPR;
+      error = null;
+
+      try {
+        await _getBranches();
+        loadingPRNumber = configuration.prNumber!;
+        dartPR = await api.getDartPR(configuration.prNumber!);
+        loadingPRNumber = null;
+      } catch (error) {
+        print(error);
+        page = ReleasesPage.unknown;
+        this.error = error;
+        return;
+      }
+      frameworkPR = null;
+      return;
+    }
+
     if (configuration.page == ReleasesPage.frameworkPR) {
       if (configuration.prNumber == null) {
         page = ReleasesPage.unknown;
@@ -285,6 +335,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           stable: stable,
           beta: beta,
           master: master,
+          onNavigateToDartPR: onNavigateToDartPR,
+          onNavigateToDartGerritPR: onNavigateToDartGerritPR,
           onNavigateToEnginePR: onNavigateToEnginePR,
           onNavigateToFrameworkPR: onNavigateToFrameworkPR,
         ),

@@ -6,11 +6,15 @@ import '../models/pr.dart';
 import '../widgets/link.dart';
 
 typedef EnginePRCallback = void Function(EnginePR pr);
+typedef DartPRCallback = void Function(DartPR pr);
+typedef DartGerritPRCallback = void Function(String url);
 typedef PRCallback = void Function(PR pr);
 
 class HomePage extends MaterialPage {
   HomePage({
     required final EnginePRCallback onNavigateToEnginePR,
+    required final DartPRCallback onNavigateToDartPR,
+    required final DartGerritPRCallback onNavigateToDartGerritPR,
     required final PRCallback onNavigateToFrameworkPR,
     final Branch? stable,
     final Branch? beta,
@@ -22,6 +26,8 @@ class HomePage extends MaterialPage {
       stable: stable,
       beta: beta,
       master: master,
+      onNavigateToDartPR: onNavigateToDartPR,
+      onNavigateToDartGerritPR: onNavigateToDartGerritPR,
       onNavigateToEnginePR: onNavigateToEnginePR,
       onNavigateToFrameworkPR: onNavigateToFrameworkPR,
     ),
@@ -31,6 +37,8 @@ class HomePage extends MaterialPage {
 class _HomePage extends StatefulWidget {
   const _HomePage({
     Key? key,
+    required this.onNavigateToDartPR,
+    required this.onNavigateToDartGerritPR,
     required this.onNavigateToEnginePR,
     required this.onNavigateToFrameworkPR,
     this.stable,
@@ -38,6 +46,8 @@ class _HomePage extends StatefulWidget {
     this.master,
   }) : super(key: key);
 
+  final DartPRCallback onNavigateToDartPR;
+  final DartGerritPRCallback onNavigateToDartGerritPR;
   final EnginePRCallback onNavigateToEnginePR;
   final PRCallback onNavigateToFrameworkPR;
   final Branch? stable;
@@ -53,6 +63,8 @@ class _HomePageState extends State<_HomePage> {
   bool _loading = false;
 
   static const String _kEngineString = 'flutter/engine/pull/';
+  static const String _kDartString = 'dart-lang/sdk/pull/';
+  static const String _kDartGerritString = 'dart-review.googlesource.com/c/sdk/+/';
   static const String _kFrameworkString = 'flutter/flutter/pull/';
 
   // TODO(justinmc): Accept prNumber for flutter PRs too?
@@ -71,6 +83,11 @@ class _HomePageState extends State<_HomePage> {
       localFrameworkPR = await api.getPr(prNumber);
     } catch (error) {}
     */
+
+    if (input.contains(_kDartGerritString)) {
+      widget.onNavigateToDartGerritPR(input);
+      return;
+    }
 
     final int engineLocation = input.lastIndexOf(_kEngineString);
     late EnginePR localEnginePR;

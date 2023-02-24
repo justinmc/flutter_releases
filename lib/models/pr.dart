@@ -89,3 +89,23 @@ class EnginePR extends PR {
 
   final PR? rollPR;
 }
+
+// TODO(justinmc): Can I combine this and EnginePR?
+/// A PR in dart-lang/sdk, along with its merge PR in the framework, if it exists.
+class DartPR extends PR {
+  DartPR({
+    required final PR dartPr,
+    this.rollPR,
+  }) : super(
+    branch: dartPr.branch,
+    htmlURL: dartPr.htmlURL,
+    number: dartPr.number,
+    state: dartPr.state,
+    title: dartPr.title,
+    user: dartPr.user,
+    mergeCommitSHA: dartPr.mergeCommitSHA,
+    mergedAt: dartPr.mergedAt,
+  );
+
+  final PR? rollPR;
+}

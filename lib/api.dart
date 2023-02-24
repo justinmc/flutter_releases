@@ -6,6 +6,7 @@ import 'models/pr.dart';
 const String kAPI = "https://api.github.com";
 const String kAPIFramework = "$kAPI/repos/flutter/flutter";
 const String kAPIEngine = "$kAPI/repos/flutter/engine";
+const String kAPIDart = "$kAPI/repos/dart-lang/sdk";
 const String kBranch = "master";
 
 enum RepoNames {
@@ -38,26 +39,8 @@ Future<PR> getPr(final int prNumber) async {
   */
 }
 
-// TODO(justinmc): Remove.
-/// Get the framework roll PR for the indicated engine PR.
-///
-/// prNumber must be a valid number for an engine PR.
-Future<PR> getRollPrFromEnginePr(int prNumber) async {
-  final http.Response prResponse = await http.get(Uri.parse('$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+flutter/engine%23$prNumber'));
-
-  if (prResponse.statusCode != 200) {
-    throw ArgumentError("Couldn't find the related roll PR.");
-  }
-
-  final Map<String, dynamic> json = jsonDecode(prResponse.body);
-  assert(json['total_count'] == 1, 'Found multiple roll PRs for engine PR $prNumber.');
-  final int rollPRNumber = json['items'][0]['number'];
-
-  return getPr(rollPRNumber);
-}
-
 /// Get the [EnginePR] for the given engine PR number, which includes the roll
-/// PR where it went into the engine.
+/// PR where it went into the framework.
 Future<EnginePR> getEnginePR(int prNumber) async {
   final http.Response prResponse = await http.get(Uri.parse('$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+flutter/engine%23$prNumber'));
 
@@ -75,6 +58,28 @@ Future<EnginePR> getEnginePR(int prNumber) async {
   return EnginePR(
     rollPR: rollPR,
     enginePr: enginePr,
+  );
+}
+
+/// Get the [DartPR] for the given dart-lang/sdk PR number, which includes the
+/// roll PR where it went into the framework.
+Future<DartPR> getDartPR(int prNumber) async {
+  final http.Response prResponse = await http.get(Uri.parse('$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+dart-lang/sdk%23$prNumber'));
+
+  if (prResponse.statusCode != 200) {
+    throw ArgumentError("Couldn't find the related roll PR.");
+  }
+
+  final Map<String, dynamic> json = jsonDecode(prResponse.body);
+  assert(json['total_count'] == 1, 'Found multiple roll PRs for Dart PR $prNumber.');
+  final int rollPRNumber = json['items'][0]['number'];
+
+  final PR rollPR = await getPr(rollPRNumber);
+  final PR dartPr = await _getDartPROnly(prNumber);
+
+  return DartPR(
+    rollPR: rollPR,
+    dartPr: dartPr,
   );
 }
 
@@ -125,6 +130,18 @@ Future<PR> _getEnginePROnly(final int prNumber) async {
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the given engine PR \"$prNumber\".");
+  }
+
+  return PR.fromJSON(jsonDecode(prResponse.body));
+}
+
+// TODO(justinmc): Can I combine this with _getEnginePROnly?
+// Get the PR in the dart-lang/sdk repo, not the full DartPR.
+Future<PR> _getDartPROnly(final int prNumber) async {
+  final http.Response prResponse = await _getPR(prNumber, kAPIDart);
+
+  if (prResponse.statusCode != 200) {
+    throw ArgumentError("Couldn't find the given engine PR \"$prNumber\" in $kAPIDart.");
   }
 
   return PR.fromJSON(jsonDecode(prResponse.body));
