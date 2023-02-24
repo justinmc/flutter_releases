@@ -71,6 +71,7 @@ Future<DartPR> getDartPR(int prNumber) async {
   }
 
   final Map<String, dynamic> json = jsonDecode(prResponse.body);
+  assert(json['total_count'] != 0, 'No roll PR found for Dart PR $prNumber.');
   assert(json['total_count'] == 1, 'Found multiple roll PRs for Dart PR $prNumber.');
   final int rollPRNumber = json['items'][0]['number'];
 

@@ -63,8 +63,8 @@ class _HomePageState extends State<_HomePage> {
   bool _loading = false;
 
   static const String _kEngineString = 'flutter/engine/pull/';
-  static const String _kDartString = 'dart-lang/sdk/pull/';
-  static const String _kDartGerritString = 'dart-review.googlesource.com/c/sdk/+/';
+  static const String _kDartString = 'dart-lang/sdk/pull/'; // e.g. https://github.com/dart-lang/sdk/pull/51494
+  static const String _kDartGerritString = 'dart-review.googlesource.com/c/sdk/+/'; // e.g. https://dart-review.googlesource.com/c/sdk/+/284741
   static const String _kFrameworkString = 'flutter/flutter/pull/';
 
   // TODO(justinmc): Accept prNumber for flutter PRs too?
@@ -89,15 +89,22 @@ class _HomePageState extends State<_HomePage> {
       return;
     }
 
+    final int dartLocation = input.lastIndexOf(_kDartString);
     final int engineLocation = input.lastIndexOf(_kEngineString);
     late EnginePR localEnginePR;
+    late DartPR localDartPR;
     final bool isEngine = engineLocation >= 0;
+    final bool isDart = dartLocation >= 0;
 
     try {
       // TODO(justinmc): Caching.
       if (isEngine) {
         final int enginePrNumber = int.parse(input.substring(engineLocation + _kEngineString.length));
         localEnginePR = await api.getEnginePR(enginePrNumber);
+      // TODO(justinmc): Disabling dart PRs because I haven't had a chance to test.
+      } else if (isDart && false) {
+        final int dartPrNumber = int.parse(input.substring(dartLocation + _kDartString.length));
+        localDartPR = await api.getDartPR(dartPrNumber);
       } else {
         final int location = input.lastIndexOf(_kFrameworkString);
         if (location < 0) {
@@ -109,7 +116,14 @@ class _HomePageState extends State<_HomePage> {
     } catch (error, stacktrace) {
       print(error);
       print(stacktrace);
-      final String message = error is ArgumentError ? error.message : error.toString();
+      final String message;
+      if (error is ArgumentError) {
+        message = error.message;
+      } else if (error is AssertionError) {
+        message = error.message?.toString() ?? error.toString();
+      } else {
+        message = error.toString();
+      }
       setState(() {
         _error = message;
         _loading = false;
@@ -121,9 +135,14 @@ class _HomePageState extends State<_HomePage> {
       _loading = false;
     });
 
-    isEngine
-        ? widget.onNavigateToEnginePR(localEnginePR)
-        : widget.onNavigateToFrameworkPR(localFrameworkPR);
+    if (isEngine) {
+      widget.onNavigateToEnginePR(localEnginePR);
+    // TODO(justinmc): Disabling dart PRs because I haven't had a chance to test.
+    } else if (isDart && false) {
+      //widget.onNavigateToDartPR(localDartPR);
+    } else {
+      widget.onNavigateToFrameworkPR(localFrameworkPR);
+    }
   }
 
   @override
