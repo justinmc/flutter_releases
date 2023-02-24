@@ -32,18 +32,21 @@ class _UnknownPage extends StatelessWidget {
         title: const Text('404'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (error != null)
-              Text(error!),
-            if (error == null)
-              const Text("Sorry, this page doesn't exist!"),
-            Link.tap(
-              text: 'Return home',
-              onTap: onNavigateHome,
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              if (error != null)
+                Text(error!),
+              if (error == null)
+                const Text("Sorry, this page doesn't exist!"),
+              Link.tap(
+                text: 'Return home',
+                onTap: onNavigateHome,
+              ),
+            ],
+          ),
         ),
       ),
     );
