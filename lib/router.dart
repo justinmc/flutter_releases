@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/pr.dart';
 import 'models/branch.dart';
@@ -10,7 +14,9 @@ import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
 import 'providers/branches_provider.dart';
+import 'widgets/github_login.dart';
 import 'api.dart' as api;
+import 'github_oauth_credentials.dart';
 
 enum ReleasesPage {
   auth,
@@ -64,7 +70,6 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
     }
 
     // Handle '/auth'
-    print('justin what $uri');
     if (uri.pathSegments[0] == 'auth') {
       final String? code = uri.queryParameters['code'];
       if (code == null || code.isEmpty) {
@@ -273,6 +278,29 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       frameworkPR = null;
       page = ReleasesPage.auth;
       authCode = configuration.authCode;
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? grantString = prefs.getString('grant');
+      print('justin grantString is $grantString');
+      assert(grantString != null);
+      final grantJson = jsonDecode(grantString!);
+      final oauth2.AuthorizationCodeGrant grant = oauth2.AuthorizationCodeGrant(
+        grantJson['githubClientId']!,
+        Uri.parse(grantJson['authorizationEndpoint']!),
+        Uri.parse(grantJson['tokenEndpoint']!),
+        secret: grantJson['githubClientSecret']!,
+        httpClient: JsonAcceptingHttpClient(),
+      );
+      grant.getAuthorizationUrl(
+        Uri.parse(GithubLoginWidget.redirectEndpoint),
+        scopes: githubScopes,
+      );
+      // TODO(justinmc): Here is where you are trying to get github oauth to work.
+      print('justin handleAuthorizationResponse');
+      final oauth2.Client client = await grant.handleAuthorizationResponse(<String, String>{
+        'code': authCode!,
+      });
+      print('justin handleAuthorizationResponse returned');
       return;
     }
     authCode = null;

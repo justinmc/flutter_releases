@@ -1,13 +1,11 @@
+import 'dart:convert';
 import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-final _authorizationEndpoint =
-    Uri.parse('https://github.com/login/oauth/authorize');
-final _tokenEndpoint = Uri.parse('https://github.com/login/oauth/access_token');
 
 class GithubLoginWidget extends StatefulWidget {
   const GithubLoginWidget({
@@ -21,6 +19,12 @@ class GithubLoginWidget extends StatefulWidget {
   final String githubClientId;
   final String githubClientSecret;
   final List<String> githubScopes;
+
+  static const String authorizationEndpoint =
+      'https://github.com/login/oauth/authorize';
+  static const String tokenEndpoint =
+      'https://github.com/login/oauth/access_token';
+  static const String redirectEndpoint = 'http://localhost:8080/auth';
 
   @override
   State<GithubLoginWidget> createState() => _GithubLoginState();
@@ -100,17 +104,20 @@ class _GithubLoginState extends State<GithubLoginWidget> {
 
     // If we don't have OAuth2 credentials yet, we need to get the resource owner
     // to authorize us. We're assuming here that we're a command-line application.
-    var grant = oauth2.AuthorizationCodeGrant(
+    final oauth2.AuthorizationCodeGrant grant = oauth2.AuthorizationCodeGrant(
       widget.githubClientId,
-      _authorizationEndpoint,
-      _tokenEndpoint,
+      Uri.parse(GithubLoginWidget.authorizationEndpoint),
+      Uri.parse(GithubLoginWidget.tokenEndpoint),
       secret: widget.githubClientSecret,
-      httpClient: _JsonAcceptingHttpClient(),
+      httpClient: JsonAcceptingHttpClient(),
     );
     Uri authorizationUrl = grant.getAuthorizationUrl(
       redirectUri,
       scopes: widget.githubScopes,
     );
+
+    // TODO(justinmc): Using the html package is web-only. Maybe add support for
+    // desktop here.
 
     // Redirect the resource owner to the authorization URL. Once the resource
     // owner has authorized, they'll be redirected to `redirectUrl` with an
@@ -120,7 +127,21 @@ class _GithubLoginState extends State<GithubLoginWidget> {
     // `redirect` and `listen` are not shown implemented here. See below for the
     // details.
     //await redirect(authorizationUrl);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'grant',
+      jsonEncode(<String, String>{
+        'githubClientId': grant.identifier,
+        'authorizationEndpoint': grant.authorizationEndpoint.toString(),
+        'tokenEndpoint': grant.tokenEndpoint.toString(),
+        'githubClientSecret': grant.secret!,
+      }),
+    );
     html.window.open(authorizationUrl.toString(), '_self');
+    // TODO(justinmc): You could do this as a separate window like below. Then
+    // when it redirects, send the info back to this window and close the popup.
+    // But no, I think I need to figure out how to serialize the grant.
+    //html.window.open(authorizationUrl.toString(), 'Auth', 'width=400, height=500, scrollbars=yes');
     // TODO(justinmc): This does a full browser redirect, as it should. Once
     // logged in, it will redirect back to thisapp/auth. Then it's up to me to
     // get the code from the query params and continue the oauth flow.
@@ -158,7 +179,7 @@ class _GithubLoginState extends State<GithubLoginWidget> {
   */
 }
 
-class _JsonAcceptingHttpClient extends http.BaseClient {
+class JsonAcceptingHttpClient extends http.BaseClient {
   final _httpClient = http.Client();
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
