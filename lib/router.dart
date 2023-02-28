@@ -284,6 +284,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       print('justin grantString is $grantString');
       assert(grantString != null);
       final grantJson = jsonDecode(grantString!);
+      print('justin recreating AuthorizationCodeGrant with $grantJson and JsonAcceptingHttpClient');
       final oauth2.AuthorizationCodeGrant grant = oauth2.AuthorizationCodeGrant(
         grantJson['githubClientId']!,
         Uri.parse(grantJson['authorizationEndpoint']!),
@@ -296,7 +297,10 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         scopes: githubScopes,
       );
       // TODO(justinmc): Here is where you are trying to get github oauth to work.
-      print('justin handleAuthorizationResponse');
+      // TODO(justinmc): Actually, this all won't work without a server. The
+      // GitHub API server doesn't support CORS. You should do a middleman
+      // caching server instead...
+      print('justin handleAuthorizationResponse with code $authCode');
       final oauth2.Client client = await grant.handleAuthorizationResponse(<String, String>{
         'code': authCode!,
       });

@@ -104,6 +104,7 @@ class _GithubLoginState extends State<GithubLoginWidget> {
 
     // If we don't have OAuth2 credentials yet, we need to get the resource owner
     // to authorize us. We're assuming here that we're a command-line application.
+    print('justin creating AuthorizationCodeGrant with ${widget.githubClientId}, ${GithubLoginWidget.authorizationEndpoint}, ${GithubLoginWidget.tokenEndpoint}, ${widget.githubClientSecret}, and JsonAcceptingHttpClient');
     final oauth2.AuthorizationCodeGrant grant = oauth2.AuthorizationCodeGrant(
       widget.githubClientId,
       Uri.parse(GithubLoginWidget.authorizationEndpoint),
