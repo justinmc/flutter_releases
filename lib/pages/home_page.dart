@@ -153,6 +153,8 @@ class _HomePageState extends State<_HomePage> {
       appBar: AppBar(
         title: const Text('Flutter Releases Info'),
         actions: <Widget>[
+          /*
+           // TODO(justinmc): Disabled for prod. Do I want to do this?
           GithubLoginWidget(
             githubClientId: githubClientId,
             githubClientSecret: githubClientSecret,
@@ -161,6 +163,7 @@ class _HomePageState extends State<_HomePage> {
               return const SizedBox.shrink();
             },
           ),
+          */
           /*
           IconButton(
             icon: const Icon(Icons.login),
