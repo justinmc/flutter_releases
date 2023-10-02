@@ -96,7 +96,7 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
       } else if (uri.pathSegments[1] == 'framework') {
         late final int prNumber;
         try {
-          prNumber = int.parse(uri.pathSegments[1]);
+          prNumber = int.parse(uri.pathSegments[2]);
         } catch (error) {
           return SynchronousFuture(ReleasesRoutePath.unknown());
         }
