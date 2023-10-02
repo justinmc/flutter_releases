@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/link.dart' as url_launcher_link;
 import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
 import '../api.dart' as api;
 import '../providers/branches_provider.dart';
 import '../widgets/link.dart';
+
+import '../constants.dart';
 
 class PRPage extends MaterialPage {
   PRPage({
@@ -37,10 +40,6 @@ class _PRPage extends ConsumerStatefulWidget {
 class _PRPageState extends ConsumerState<_PRPage> {
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
   bool _finishedLoadingIsIns = false;
-
-  void _onTapGithub() async {
-    if (!await launchUrl(Uri.parse(widget.pr!.htmlURL))) throw 'Could not launch ${widget.pr!.htmlURL}';
-  }
 
   // Check if the PR is in the given branch and update _branchesIsIn.
   //
@@ -204,12 +203,18 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 isInMaster: _isIn(branches.master),
               ),
             // TODO(justinmc): URL launcher Text(''),
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              onPressed: _onTapGithub,
-              child: const Text('View on Github'),
+            url_launcher_link.Link(
+              uri: Uri.parse(widget.pr!.htmlURL),
+              target: url_launcher_link.LinkTarget.blank,
+              builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+                return TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 20),
+                  ),
+                  onPressed: followLink,
+                  child: const Text('View PR on Github'),
+                );
+              },
             ),
             if (widget.pr!.status == PRStatus.merged)
               Text.rich(

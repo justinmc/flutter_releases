@@ -1,3 +1,5 @@
+import '../constants.dart';
+
 enum BranchNames {
   stable,
   beta,
@@ -42,7 +44,7 @@ class Branch {
   Uri get tagUri {
     assert(tagName != null);
 
-    return Uri.parse('kAkAPIFramework/releases/tag/$tagName');
+    return Uri.parse('$kGitHubFlutter/releases/tag/$tagName');
   }
 
   Branch copyWith({

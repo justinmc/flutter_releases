@@ -232,7 +232,7 @@ class _Branch extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Text(branch.name),
+        Text('${branch.name} '),
         if (branch.tagName != null)
           Link(
             text: branch.tagName!,

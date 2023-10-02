@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-const String kGitHub = 'https://www.github.com';
-const String kGitHubFlutter = '$kGitHub/flutter/flutter';
+import 'package:url_launcher/link.dart' as url_launcher_link;
 
 /// Just a link.
 ///
@@ -31,26 +28,32 @@ class Link extends StatelessWidget {
   final Uri? uri;
   final VoidCallback? onTap;
 
-  void _onTap() async {
-    if (onTap != null) {
-      return onTap!();
-    }
-    if (!await launchUrl(uri!)) throw 'Could not launch $uri.';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _onTap,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.blue,
+    return url_launcher_link.Link(
+      uri: uri,
+      target: url_launcher_link.LinkTarget.blank,
+      builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+        return GestureDetector(
+          onTap: () {
+            if (onTap != null) {
+              return onTap!();
+            }
+            if (followLink != null) {
+              followLink();
+            }
+          },
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.blue,
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
