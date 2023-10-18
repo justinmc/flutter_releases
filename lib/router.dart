@@ -123,22 +123,22 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
   @override
   RouteInformation? restoreRouteInformation(ReleasesRoutePath configuration) {
     if (configuration.page == ReleasesPage.unknown) {
-      return const RouteInformation(location: '/404');
+      return RouteInformation(uri: Uri.parse('/404'));
     }
     if (configuration.page == ReleasesPage.home) {
-      return const RouteInformation(location: '/');
+      return RouteInformation(uri: Uri.parse('/'));
     }
     if (configuration.page == ReleasesPage.auth) {
-      return RouteInformation(location: '/auth?code=${configuration.authCode}');
+      return RouteInformation(uri: Uri.parse('/auth?code=${configuration.authCode}'));
     }
     if (configuration.page == ReleasesPage.frameworkPR) {
-      return RouteInformation(location: '/pr/framework/${configuration.prNumber}');
+      return RouteInformation(uri: Uri.parse('/pr/framework/${configuration.prNumber}'));
     }
     if (configuration.page == ReleasesPage.enginePR) {
-      return RouteInformation(location: '/pr/engine/${configuration.prNumber}');
+      return RouteInformation(uri: Uri.parse('/pr/engine/${configuration.prNumber}'));
     }
     if (configuration.page == ReleasesPage.dartPR) {
-      return RouteInformation(location: '/pr/dart/${configuration.prNumber}');
+      return RouteInformation(uri: Uri.parse('/pr/dart/${configuration.prNumber}'));
     }
     return null;
   }
