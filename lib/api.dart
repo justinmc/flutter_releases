@@ -49,10 +49,12 @@ Future<EnginePR> getEnginePR(int prNumber) async {
   }
 
   final Map<String, dynamic> json = jsonDecode(prResponse.body);
-  assert(json['total_count'] == 1, 'Found multiple roll PRs for engine PR $prNumber.');
-  final int rollPRNumber = json['items'][0]['number'];
+  final int rollPRs = json['total_count'];
+  assert(rollPRs <= 1, 'Found multiple roll PRs for engine PR $prNumber.');
 
-  final PR rollPR = await getPr(rollPRNumber);
+  final PR? rollPR = rollPRs == 1
+      ? await getPr(json['items'][0]['number'])
+      : null;
   final PR enginePr = await _getEnginePROnly(prNumber);
 
   return EnginePR(
@@ -71,11 +73,12 @@ Future<DartPR> getDartPR(int prNumber) async {
   }
 
   final Map<String, dynamic> json = jsonDecode(prResponse.body);
-  assert(json['total_count'] != 0, 'No roll PR found for Dart PR $prNumber.');
-  assert(json['total_count'] == 1, 'Found multiple roll PRs for Dart PR $prNumber.');
-  final int rollPRNumber = json['items'][0]['number'];
+  final int rollPRs = json['total_count'];
+  assert(rollPRs <= 1, 'Found multiple roll PRs for Dart PR $prNumber.');
 
-  final PR rollPR = await getPr(rollPRNumber);
+  final PR? rollPR = rollPRs == 1
+      ? await getPr(json['items'][0]['number'])
+      : null;
   final PR dartPr = await _getDartPROnly(prNumber);
 
   return DartPR(

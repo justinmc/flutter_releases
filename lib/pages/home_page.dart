@@ -76,16 +76,6 @@ class _HomePageState extends State<_HomePage> {
       _loading = true;
     });
 
-    late PR localFrameworkPR;
-
-    /*
-    // TODO(justinmc): Accept a plain framework PR number, not a full Github url.
-    try {
-      final int prNumber = int.parse(input);
-      localFrameworkPR = await api.getPr(prNumber);
-    } catch (error) {}
-    */
-
     if (input.contains(_kDartGerritString)) {
       widget.onNavigateToDartGerritPR(input);
       return;
@@ -93,8 +83,9 @@ class _HomePageState extends State<_HomePage> {
 
     final int dartLocation = input.lastIndexOf(_kDartString);
     final int engineLocation = input.lastIndexOf(_kEngineString);
-    late EnginePR localEnginePR;
-    late DartPR localDartPR;
+    late final EnginePR? localEnginePR;
+    late final DartPR? localDartPR;
+    late final PR? localFrameworkPR;
     final bool isEngine = engineLocation >= 0;
     final bool isDart = dartLocation >= 0;
 
@@ -103,16 +94,16 @@ class _HomePageState extends State<_HomePage> {
       if (isEngine) {
         final int enginePrNumber = int.parse(input.substring(engineLocation + _kEngineString.length));
         localEnginePR = await api.getEnginePR(enginePrNumber);
-      // TODO(justinmc): Disabling dart PRs because I haven't had a chance to test.
-      } else if (isDart && false) {
+      } else if (isDart) {
         final int dartPrNumber = int.parse(input.substring(dartLocation + _kDartString.length));
         localDartPR = await api.getDartPR(dartPrNumber);
       } else {
         final int location = input.lastIndexOf(_kFrameworkString);
-        if (location < 0) {
-          throw ArgumentError('Not a valid PR URL.');
-        }
-        final int prNumber = int.parse(input.substring(location + _kFrameworkString.length));
+        final int prNumber = location < 0
+            // Plain PR number.
+            ? int.parse(input)
+            // PR URL.
+            : int.parse(input.substring(location + _kFrameworkString.length));
         localFrameworkPR = await api.getPr(prNumber);
       }
     } catch (error, stacktrace) {
@@ -127,7 +118,7 @@ class _HomePageState extends State<_HomePage> {
         message = error.toString();
       }
       setState(() {
-        _error = message;
+        _error = 'Not a valid PR URL or number. $message';
         _loading = false;
       });
       return;
@@ -138,12 +129,11 @@ class _HomePageState extends State<_HomePage> {
     });
 
     if (isEngine) {
-      widget.onNavigateToEnginePR(localEnginePR);
-    // TODO(justinmc): Disabling dart PRs because I haven't had a chance to test.
-    } else if (isDart && false) {
-      //widget.onNavigateToDartPR(localDartPR);
+      widget.onNavigateToEnginePR(localEnginePR!);
+    } else if (isDart) {
+      widget.onNavigateToDartPR(localDartPR!);
     } else {
-      widget.onNavigateToFrameworkPR(localFrameworkPR);
+      widget.onNavigateToFrameworkPR(localFrameworkPR!);
     }
   }
 

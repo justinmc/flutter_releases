@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/link.dart' as url_launcher_link;
 import '../models/branch.dart';
 import '../models/branches.dart';
@@ -130,6 +129,18 @@ class _PRPageState extends ConsumerState<_PRPage> {
     return _branchesIsIn.contains(branch.branchName);
   }
 
+  String get _title {
+    late final String type;
+    if (widget.pr is EnginePR) {
+      type = 'Engine';
+    } else if (widget.pr is DartPR) {
+      type = 'Dart';
+    } else {
+      type = 'Framework';
+    }
+    return '$type PR: ${widget.pr!.title}';
+  }
+
   @override
   void initState() {
     // TODO(justinmc): Cache this isin data.
@@ -167,7 +178,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.pr is EnginePR ? 'Engine' : 'Framework'} PR ${widget.pr!.title}'),
+        title: Text(_title),
       ),
       body: Center(
         child: Column(
@@ -188,6 +199,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 ],
               ),
             ),
+            // TODO(justinmc): Some colors for these statuses like on GitHub?
             if (widget.pr!.status == PRStatus.open)
               const Text('Open'),
             if (widget.pr!.status == PRStatus.draft)

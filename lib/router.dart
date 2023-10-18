@@ -78,7 +78,7 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
       return SynchronousFuture(ReleasesRoutePath.auth(code));
     }
 
-    // Handle '/pr/engineorframework/:prNumber'
+    // Handle '/pr/engineorframeworkordart/:prNumber'
     if (uri.pathSegments.length == 3) {
       if (uri.pathSegments[0] != 'pr') {
         return SynchronousFuture(ReleasesRoutePath.unknown());
@@ -93,6 +93,15 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
         }
 
         return SynchronousFuture(ReleasesRoutePath.enginePR(prNumber));
+      } else if (uri.pathSegments[1] == 'dart') {
+        late final int prNumber;
+        try {
+          prNumber = int.parse(uri.pathSegments[2]);
+        } catch (error) {
+          return SynchronousFuture(ReleasesRoutePath.unknown());
+        }
+
+        return SynchronousFuture(ReleasesRoutePath.dartPR(prNumber));
       } else if (uri.pathSegments[1] == 'framework') {
         late final int prNumber;
         try {
@@ -127,6 +136,9 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
     }
     if (configuration.page == ReleasesPage.enginePR) {
       return RouteInformation(location: '/pr/engine/${configuration.prNumber}');
+    }
+    if (configuration.page == ReleasesPage.dartPR) {
+      return RouteInformation(location: '/pr/dart/${configuration.prNumber}');
     }
     return null;
   }
@@ -218,18 +230,18 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   }
 
   void onNavigateToDartPR(DartPR selectedPR) {
-    /*
     frameworkPR = null;
-    enginePR = selectedPR;
-    page = ReleasesPage.enginePR;
+    enginePR = null;
+    dartPR = selectedPR;
+    page = ReleasesPage.dartPR;
     error = null;
     notifyListeners();
-    */
   }
 
   void onNavigateToEnginePR(EnginePR selectedPR) {
     frameworkPR = null;
     enginePR = selectedPR;
+    dartPR = null;
     page = ReleasesPage.enginePR;
     error = null;
     notifyListeners();
@@ -238,6 +250,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   void onNavigateToFrameworkPR(PR selectedPR) {
     frameworkPR = selectedPR;
     enginePR = null;
+    dartPR = null;
     page = ReleasesPage.frameworkPR;
     error = null;
     notifyListeners();
@@ -421,13 +434,17 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
             authCode: authCode!,
             onNavigateHome: onNavigateHome,
           ),
+        if (page == ReleasesPage.frameworkPR)
+          PRPage(
+            pr: frameworkPR,
+          ),
         if (page == ReleasesPage.enginePR)
           PRPage(
             pr: enginePR,
           ),
-        if (page == ReleasesPage.frameworkPR)
+        if (page == ReleasesPage.dartPR)
           PRPage(
-            pr: frameworkPR,
+            pr: dartPR,
           ),
       ],
       onPopPage: (Route<dynamic> route, dynamic result) {
