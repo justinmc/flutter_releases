@@ -38,12 +38,16 @@ class _UnknownPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               if (error != null)
-                Text(error!),
+                SelectionArea(
+                  child: Text(error!),
+                ),
               if (error == null)
-                const Text("Sorry, this page doesn't exist!"),
-              Link.tap(
+                const SelectionArea(
+                  child: Text("Sorry, this page doesn't exist!"),
+                ),
+              Link(
                 text: 'Return home',
-                onTap: onNavigateHome,
+                uri: Uri.parse('/'),
               ),
             ],
           ),
