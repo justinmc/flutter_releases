@@ -278,6 +278,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
 
   @override
   Future<void> setNewRoutePath(final ReleasesRoutePath configuration) async {
+    // TODO(justinmc): Rewrite this with switches.
     if (configuration.page == ReleasesPage.unknown) {
       authCode = null;
       enginePR = null;
@@ -336,8 +337,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         loadingPRNumber = configuration.prNumber!;
         enginePR = await api.getEnginePR(configuration.prNumber!);
         loadingPRNumber = null;
-      } catch (error) {
+      } catch (error, stacktrace) {
         print(error);
+        print(stacktrace);
         page = ReleasesPage.unknown;
         this.error = error;
         return;
@@ -360,8 +362,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         loadingPRNumber = configuration.prNumber!;
         dartPR = await api.getDartPR(configuration.prNumber!);
         loadingPRNumber = null;
-      } catch (error) {
+      } catch (error, stacktrace) {
         print(error);
+        print(stacktrace);
         page = ReleasesPage.unknown;
         this.error = error;
         return;
@@ -384,8 +387,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
         await _getBranches();
         frameworkPR = await api.getPr(configuration.prNumber!);
         loadingPRNumber = null;
-      } catch (error) {
+      } catch (error, stacktrace) {
         print(error);
+        print(stacktrace);
         loadingPRNumber = null;
         page = ReleasesPage.unknown;
         this.error = error;
@@ -400,8 +404,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     page = ReleasesPage.home;
     try {
       await _getBranches();
-    } catch (error) {
+    } catch (error, stacktrace) {
       print(error);
+      print(stacktrace);
       page = ReleasesPage.unknown;
       this.error = error;
       return;

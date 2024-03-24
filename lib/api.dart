@@ -87,13 +87,18 @@ Future<DartPR> getDartPR(int prNumber) async {
   );
 }
 
+// This page value is a hack. The latest tags happen to be on this page more or
+// less because it's in alphanumeric order, and we originally tagged with
+// "v1.x" and later removed the "v", so the first pages are full of old tags.
+const _bestGuessTagPage = 4;
+
 // TODO(justinmc): How do I get the latest version tag of a given branch (e.g. stable)?
 Future<Branch> getBranch(BranchNames name) async {
   final http.Response branchResponse = await _getBranch(name.name);
 
   if (branchResponse.statusCode != 200) {
     // TODO(justinmc): Capture the error message and display it on the error page.
-    throw ArgumentError("Couldn't get the branch $name.");
+    throw ArgumentError("${branchResponse.statusCode}: Couldn't get the branch $name.");
   }
 
   final Branch branch = Branch.fromJSON(jsonDecode(branchResponse.body));
@@ -103,7 +108,26 @@ Future<Branch> getBranch(BranchNames name) async {
     return branch;
   }
 
-  final String tagName = await _getTag(branch.sha);
+  late final String tagName;
+  try {
+    // Try to find the tag on the most likely page.
+    tagName = await _getTag(branch.sha, _bestGuessTagPage);
+  } catch (e) {
+    if (e.toString() != 'Invalid argument(s): No tag found for sha ${branch.sha} on page $_bestGuessTagPage.') {
+      rethrow;
+    }
+    try {
+      tagName = await _getTagFullSearch(branch.sha);
+    } catch (e) {
+      final String errorString = e.toString();
+      const String errorMessageStart = 'Invalid argument(s): No tags';
+      if (errorString.length < errorMessageStart.length || errorString.substring(0, errorMessageStart.length) != errorMessageStart) {
+        rethrow;
+      }
+      // The tag simply doesn't exist in the API for some reason.
+      return branch;
+    }
+  }
 
   return branch.copyWith(tagName: tagName);
 }
@@ -159,18 +183,19 @@ Future<http.Response> _getBranch(final String branchName) {
   return http.get(Uri.parse('$kAPIFramework/branches/$branchName'));
 }
 
-Future<String> _getTag(String sha) async {
-  // These per_page and page values are hacks. The latest tags happen to be on
-  // this page more or less because it's in alphanumeric order, and we
-  // originally tagged with "v1.x" and later removed the "v", so the first pages
-  // are full of old tags.
-  final http.Response response = await http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=4'));
+Future<String> _getTag(String sha, int page) async {
+  // 100 is the maximum supported number of tags per page.
+  final http.Response response = await http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=$page'));
 
   if (response.statusCode != 200) {
     throw ArgumentError("Couldn't get the tag for sha $sha.");
   }
 
   final List<dynamic> json = jsonDecode(response.body);
+
+  if (json.isEmpty) {
+    throw ArgumentError('No tags found for sha $sha on page $page.');
+  }
 
   for (Map<String, dynamic> jsonTag in json) {
     final String jsonSha = jsonTag['commit']['sha'];
@@ -179,7 +204,23 @@ Future<String> _getTag(String sha) async {
     }
   }
 
-  throw ArgumentError('No tag found for sha $sha.');
+  throw ArgumentError('No tag found for sha $sha on page $page.');
+}
+
+Future<String> _getTagFullSearch(String sha) async {
+  int page = 0;
+  while (true) {
+    try {
+      // TODO(justinmc): Should search in parallel?
+      return await _getTag(sha, page);
+    } catch (e) {
+      if (e.toString() != 'Invalid argument(s): No tag found for sha $sha on page $page.') {
+        rethrow;
+      }
+      // Skip page 4, since that was probably already searched.
+      page = page == 3 ? page + 2 : page + 1;
+    }
+  }
 }
 
 Future<http.Response> _compare(final String sha1, final String sha2) {
