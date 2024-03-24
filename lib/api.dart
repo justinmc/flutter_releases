@@ -209,6 +209,8 @@ Future<String> _getTag(String sha, int page) async {
   throw ArgumentError('No tag found for sha $sha on page $page.');
 }
 
+// TODO(justinmc): Maybe it's not worth doing this when under the threat of
+// GitHub API rate limiting.
 Future<String> _getTagFullSearch(String sha) async {
   int page = 0;
   while (true) {
