@@ -96,7 +96,9 @@ const _bestGuessTagPage = 4;
 Future<Branch> getBranch(BranchNames name) async {
   final http.Response branchResponse = await _getBranch(name.name);
 
-  if (branchResponse.statusCode != 200) {
+  if (branchResponse.statusCode == 403) {
+    throw Exception("${branchResponse.statusCode}: The GitHub API seems to be rate-limiting this app. Try again later, sorry!");
+  } else if (branchResponse.statusCode != 200) {
     // TODO(justinmc): Capture the error message and display it on the error page.
     throw ArgumentError("${branchResponse.statusCode}: Couldn't get the branch $name.");
   }
