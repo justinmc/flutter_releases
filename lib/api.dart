@@ -92,7 +92,6 @@ Future<DartPR> getDartPR(int prNumber) async {
 // "v1.x" and later removed the "v", so the first pages are full of old tags.
 const _bestGuessTagPage = 4;
 
-// TODO(justinmc): How do I get the latest version tag of a given branch (e.g. stable)?
 Future<Branch> getBranch(BranchNames name) async {
   final http.Response branchResponse = await _getBranch(name.name);
 
@@ -118,17 +117,12 @@ Future<Branch> getBranch(BranchNames name) async {
     if (e.toString() != 'Invalid argument(s): No tag found for sha ${branch.sha} on page $_bestGuessTagPage.') {
       rethrow;
     }
-    try {
-      tagName = await _getTagFullSearch(branch.sha);
-    } catch (e) {
-      final String errorString = e.toString();
-      const String errorMessageStart = 'Invalid argument(s): No tags';
-      if (errorString.length < errorMessageStart.length || errorString.substring(0, errorMessageStart.length) != errorMessageStart) {
-        rethrow;
-      }
-      // The tag simply doesn't exist in the API for some reason.
-      return branch;
-    }
+    // Was able to serach the bestGuessPage, but couldn't find the tag among
+    // those. Could do _getTagFullSearch, but that's pushing the rate limit.
+    // I've seen the tag just plain not appear in the API results anywhere
+    // before, too. So for now just forget about finding the tag if it's not in
+    // the best guess page.
+    return branch;
   }
 
   return branch.copyWith(tagName: tagName);
@@ -189,7 +183,9 @@ Future<String> _getTag(String sha, int page) async {
   // 100 is the maximum supported number of tags per page.
   final http.Response response = await http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=$page'));
 
-  if (response.statusCode != 200) {
+  if (response.statusCode == 403) {
+    throw Exception("${response.statusCode}: The GitHub API seems to be rate-limiting this app. Try again later, sorry!");
+  } else if (response.statusCode != 200) {
     throw ArgumentError("Couldn't get the tag for sha $sha.");
   }
 
@@ -209,8 +205,9 @@ Future<String> _getTag(String sha, int page) async {
   throw ArgumentError('No tag found for sha $sha on page $page.');
 }
 
-// TODO(justinmc): Maybe it's not worth doing this when under the threat of
-// GitHub API rate limiting.
+// TODO(justinmc): If using GitHub login and so not worried about rate limiting,
+// it's probably worth it to do this full search if it's not found on the best
+// guess page.
 Future<String> _getTagFullSearch(String sha) async {
   int page = 0;
   while (true) {
