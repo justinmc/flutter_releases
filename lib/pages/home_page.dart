@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'package:url_launcher/link.dart' as url_launcher_link;
+
 import '../api.dart' as api;
-import '../github_oauth_credentials.dart';
+//import '../github_oauth_credentials.dart';
 import '../models/branch.dart';
 import '../models/pr.dart';
-import '../widgets/github_login.dart';
+//import '../widgets/github_login.dart';
 import '../widgets/link.dart';
 
 typedef EnginePRCallback = void Function(EnginePR pr);
@@ -143,6 +145,17 @@ class _HomePageState extends State<_HomePage> {
       appBar: AppBar(
         title: const Text('Flutter Releases Info'),
         actions: <Widget>[
+          url_launcher_link.Link(
+            uri: Uri.parse('https://www.github.com/justinmc/flutter_releases'),
+            target: url_launcher_link.LinkTarget.blank,
+            builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+              return IconButton(
+                icon: const Icon(Icons.code),
+                tooltip: 'GitHub',
+                onPressed: followLink,
+              );
+            },
+          ),
           /*
            // TODO(justinmc): Disabled for prod. Do I want to do this?
           GithubLoginWidget(
