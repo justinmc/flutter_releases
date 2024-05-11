@@ -156,6 +156,16 @@ class _HomePageState extends State<_HomePage> {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.info),
+            tooltip: 'About Flutter Releases Info',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) => const _InfoDialog(),
+              );
+            },
+          ),
           /*
            // TODO(justinmc): Disabled for prod. Do I want to do this?
           GithubLoginWidget(
@@ -251,6 +261,58 @@ class _Branch extends StatelessWidget {
         ),
         const Text(') '),
         Text('released ${branch.formattedDate}'),
+      ],
+    );
+  }
+}
+
+class _InfoDialog extends StatelessWidget {
+  const _InfoDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('About Flutter Releases Info'),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 256.0),
+        child: Text.rich(
+          TextSpan(
+            text: 'This little web app was originally built to answer the question: Is this PR in stable yet? Paste a link to a Flutter PR and you\'ll get some info about which Flutter releases it has made it into.\n\nFile any issues ',
+            children: <InlineSpan>[
+              WidgetSpan(
+                child: Link(
+                  uri: Uri.parse('https://www.github.com/justinmc/flutter_releases'),
+                  text: 'on GitHub',
+                ),
+              ),
+              TextSpan(
+                text: ', or reach out to me on X (',
+                children: <InlineSpan>[
+                  WidgetSpan(
+                    child: Link(
+                      uri: Uri.parse('https://x.com/justinjmcc'),
+                      text: '@justinjmcc',
+                    ),
+                  ),
+                ],
+              ),
+              const TextSpan(
+                text: ') for anything else.\n\nThis project sometimes hits GitHub\'s rate limiting due to my own lazy engineering, so coming back later might work if it appears to be down.',
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          style: TextButton.styleFrom(
+            textStyle: Theme.of(context).textTheme.labelLarge,
+          ),
+          child: const Text('Close'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ],
     );
   }
