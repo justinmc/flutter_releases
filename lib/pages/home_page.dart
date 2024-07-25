@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 import 'package:url_launcher/link.dart' as url_launcher_link;
@@ -65,6 +66,7 @@ class _HomePage extends StatefulWidget {
 class _HomePageState extends State<_HomePage> {
   String? _error;
   bool _loading = false;
+  final FocusNode _urlFieldFocusNode = FocusNode();
 
   static const String _kEngineString = 'flutter/engine/pull/';
   static const String _kDartString = 'dart-lang/sdk/pull/'; // e.g. https://github.com/dart-lang/sdk/pull/51494
@@ -189,46 +191,54 @@ class _HomePageState extends State<_HomePage> {
           */
         ],
       ),
-      body: SelectionArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text('Latest '),
-                    Link(
-                      text: 'releases',
-                      uri: Uri.parse('https://docs.flutter.dev/development/tools/sdk/releases'),
-                    ),
-                    const Text(':'),
-                  ]
-                ),
-                if (widget.stable == null)
-                  const Text('Loading stable release...'),
-                if (widget.beta == null)
-                  const Text('Loading beta release...'),
-                if (widget.master == null)
-                  const Text('Loading master release...'),
-                if (widget.stable != null)
-                  _Branch(branch: widget.stable!),
-                if (widget.beta != null)
-                  _Branch(branch: widget.beta!),
-                if (widget.master != null)
-                  _Branch(branch: widget.master!),
-                // TODO(justinmc): Loading state.
-                TextField(
-                  enabled: !_loading,
-                  decoration: InputDecoration(
-                    hintText: 'Github PR URL (framework or engine)',
-                    errorText: _error,
+      body: CallbackShortcuts(
+        bindings: <ShortcutActivator, VoidCallback>{
+          const SingleActivator(LogicalKeyboardKey.slash): () {
+            _urlFieldFocusNode.requestFocus();
+          },
+        },
+        child: SelectionArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Text('Latest '),
+                      Link(
+                        text: 'releases',
+                        uri: Uri.parse('https://docs.flutter.dev/development/tools/sdk/releases'),
+                      ),
+                      const Text(':'),
+                    ]
                   ),
-                  onSubmitted: _onSubmittedPR,
-                ),
-              ],
+                  if (widget.stable == null)
+                    const Text('Loading stable release...'),
+                  if (widget.beta == null)
+                    const Text('Loading beta release...'),
+                  if (widget.master == null)
+                    const Text('Loading master release...'),
+                  if (widget.stable != null)
+                    _Branch(branch: widget.stable!),
+                  if (widget.beta != null)
+                    _Branch(branch: widget.beta!),
+                  if (widget.master != null)
+                    _Branch(branch: widget.master!),
+                  // TODO(justinmc): Loading state.
+                  TextField(
+                    focusNode: _urlFieldFocusNode,
+                    enabled: !_loading,
+                    decoration: InputDecoration(
+                      hintText: 'Github PR URL (framework or engine)',
+                      errorText: _error,
+                    ),
+                    onSubmitted: _onSubmittedPR,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
