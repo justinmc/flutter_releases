@@ -300,7 +300,7 @@ class _BranchesIn extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               const Text('master: '),
-              Text(_isInToEmoji(isInMaster)),
+              _IsIn(isIn: isInMaster),
               // TODO(justinmc): Display at what version the PR made it into
               // each channel. Can you figure that out based on the tags on the
               // merge commit?
@@ -312,18 +312,35 @@ class _BranchesIn extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               const Text('beta: '),
-              Text(_isInToEmoji(isInBeta)),
+              _IsIn(isIn: isInBeta),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               const Text('stable: '),
-              Text(_isInToEmoji(isInStable)),
+              _IsIn(isIn: isInStable),
             ],
           ),
         ],
       ),
     );
+  }
+}
+
+class _IsIn extends StatelessWidget {
+  const _IsIn({
+    required this.isIn,
+  });
+
+  final bool? isIn;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (isIn) {
+      true => const Text('✔️'),
+      false => const Text('❌'),
+      null => const SizedBox(height: 16.0, child: CircularProgressIndicator.adaptive()),
+    };
   }
 }
