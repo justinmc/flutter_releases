@@ -181,83 +181,85 @@ class _PRPageState extends ConsumerState<_PRPage> {
       appBar: AppBar(
         title: Text(_title),
       ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              width: 200.0,
-              child: Row(
-                children: <Widget>[
-                  Link.fromString(
-                    text: '#${widget.pr!.number}',
-                    url: widget.pr!.htmlURL,
-                  ),
-                  const Text(' by '),
-                  Link.fromString(
-                    text: widget.pr!.user,
-                    url: 'https://www.github.com/${widget.pr!.user}',
-                  ),
-                ],
-              ),
-            ),
-            // TODO(justinmc): Some colors for these statuses like on GitHub?
-            if (widget.pr!.status == PRStatus.open)
-              const Text('Open'),
-            if (widget.pr!.status == PRStatus.draft)
-              const Text('Draft'),
-            if (widget.pr!.status == PRStatus.merged)
-              const Text('Merged'),
-            if (widget.pr!.status == PRStatus.closed)
-              const Text('Closed'),
-            if (widget.pr!.status == PRStatus.merged)
-              _BranchesIn(
-                isInStable: _isIn(branches.stable),
-                isInBeta: _isIn(branches.beta),
-                isInMaster: _isIn(branches.master),
-              ),
-            // TODO(justinmc): URL launcher Text(''),
-            url_launcher_link.Link(
-              uri: Uri.parse(widget.pr!.htmlURL),
-              target: url_launcher_link.LinkTarget.blank,
-              builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
-                return TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 20),
-                  ),
-                  onPressed: followLink,
-                  child: const Text('View PR on Github'),
-                );
-              },
-            ),
-            if (widget.pr!.status == PRStatus.merged)
-              Text.rich(
-                TextSpan(
-                  children: <InlineSpan>[
-                    WidgetSpan(
-                      child: Link.fromString(
-                        text: widget.pr!.mergeCommitShortSHA!,
-                        url: '$kGitHubFlutter/commit/${widget.pr!.mergeCommitSHA}',
-                      ),
+      body: SelectionArea(
+        child: Center(
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                width: 200.0,
+                child: Row(
+                  children: <Widget>[
+                    Link.fromString(
+                      text: '#${widget.pr!.number}',
+                      url: widget.pr!.htmlURL,
                     ),
-                    TextSpan(
-                      text: ' merged at ${widget.pr!.formattedMergedAt} into branch ',
-                    ),
-                    WidgetSpan(
-                      child: Link.fromString(
-                        text: widget.pr!.branch,
-                        url: '$kGitHubFlutter/tree/${widget.pr!.branch}',
-                      ),
-                    ),
-                    const TextSpan(
-                      text: '.',
+                    const Text(' by '),
+                    Link.fromString(
+                      text: widget.pr!.user,
+                      url: 'https://www.github.com/${widget.pr!.user}',
                     ),
                   ],
                 ),
               ),
-            if (widget.pr!.status == PRStatus.merged)
-              // TODO(justinmc): Can I find reverts of a PR and fix this?
-              const Text('Note that this does not consider if this PR was reverted!'),
-          ],
+              // TODO(justinmc): Some colors for these statuses like on GitHub?
+              if (widget.pr!.status == PRStatus.open)
+                const Text('Open'),
+              if (widget.pr!.status == PRStatus.draft)
+                const Text('Draft'),
+              if (widget.pr!.status == PRStatus.merged)
+                const Text('Merged'),
+              if (widget.pr!.status == PRStatus.closed)
+                const Text('Closed'),
+              if (widget.pr!.status == PRStatus.merged)
+                _BranchesIn(
+                  isInStable: _isIn(branches.stable),
+                  isInBeta: _isIn(branches.beta),
+                  isInMaster: _isIn(branches.master),
+                ),
+              // TODO(justinmc): URL launcher Text(''),
+              url_launcher_link.Link(
+                uri: Uri.parse(widget.pr!.htmlURL),
+                target: url_launcher_link.LinkTarget.blank,
+                builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+                  return TextButton(
+                    style: TextButton.styleFrom(
+                      textStyle: const TextStyle(fontSize: 20),
+                    ),
+                    onPressed: followLink,
+                    child: const Text('View PR on Github'),
+                  );
+                },
+              ),
+              if (widget.pr!.status == PRStatus.merged)
+                Text.rich(
+                  TextSpan(
+                    children: <InlineSpan>[
+                      WidgetSpan(
+                        child: Link.fromString(
+                          text: widget.pr!.mergeCommitShortSHA!,
+                          url: '$kGitHubFlutter/commit/${widget.pr!.mergeCommitSHA}',
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' merged at ${widget.pr!.formattedMergedAt} into branch ',
+                      ),
+                      WidgetSpan(
+                        child: Link.fromString(
+                          text: widget.pr!.branch,
+                          url: '$kGitHubFlutter/tree/${widget.pr!.branch}',
+                        ),
+                      ),
+                      const TextSpan(
+                        text: '.',
+                      ),
+                    ],
+                  ),
+                ),
+              if (widget.pr!.status == PRStatus.merged)
+                // TODO(justinmc): Can I find reverts of a PR and fix this?
+                const Text('Note that this does not consider if this PR was reverted!'),
+            ],
+          ),
         ),
       ),
     );
@@ -297,8 +299,8 @@ class _BranchesIn extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              const SelectableText('master: '),
-              SelectableText(_isInToEmoji(isInMaster)),
+              const Text('master: '),
+              Text(_isInToEmoji(isInMaster)),
               // TODO(justinmc): Display at what version the PR made it into
               // each channel. Can you figure that out based on the tags on the
               // merge commit?
@@ -309,15 +311,15 @@ class _BranchesIn extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              const SelectableText('beta: '),
-              SelectableText(_isInToEmoji(isInBeta)),
+              const Text('beta: '),
+              Text(_isInToEmoji(isInBeta)),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              const SelectableText('stable: '),
-              SelectableText(_isInToEmoji(isInStable)),
+              const Text('stable: '),
+              Text(_isInToEmoji(isInStable)),
             ],
           ),
         ],
