@@ -189,45 +189,47 @@ class _HomePageState extends State<_HomePage> {
           */
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text('Latest '),
-                  Link(
-                    text: 'releases',
-                    uri: Uri.parse('https://docs.flutter.dev/development/tools/sdk/releases'),
-                  ),
-                  const Text(':'),
-                ]
-              ),
-              if (widget.stable == null)
-                const Text('Loading stable release...'),
-              if (widget.beta == null)
-                const Text('Loading beta release...'),
-              if (widget.master == null)
-                const Text('Loading master release...'),
-              if (widget.stable != null)
-                _Branch(branch: widget.stable!),
-              if (widget.beta != null)
-                _Branch(branch: widget.beta!),
-              if (widget.master != null)
-                _Branch(branch: widget.master!),
-              // TODO(justinmc): Loading state.
-              TextField(
-                enabled: !_loading,
-                decoration: InputDecoration(
-                  hintText: 'Github PR URL (framework or engine)',
-                  errorText: _error,
+      body: SelectionArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Text('Latest '),
+                    Link(
+                      text: 'releases',
+                      uri: Uri.parse('https://docs.flutter.dev/development/tools/sdk/releases'),
+                    ),
+                    const Text(':'),
+                  ]
                 ),
-                onSubmitted: _onSubmittedPR,
-              ),
-            ],
+                if (widget.stable == null)
+                  const Text('Loading stable release...'),
+                if (widget.beta == null)
+                  const Text('Loading beta release...'),
+                if (widget.master == null)
+                  const Text('Loading master release...'),
+                if (widget.stable != null)
+                  _Branch(branch: widget.stable!),
+                if (widget.beta != null)
+                  _Branch(branch: widget.beta!),
+                if (widget.master != null)
+                  _Branch(branch: widget.master!),
+                // TODO(justinmc): Loading state.
+                TextField(
+                  enabled: !_loading,
+                  decoration: InputDecoration(
+                    hintText: 'Github PR URL (framework or engine)',
+                    errorText: _error,
+                  ),
+                  onSubmitted: _onSubmittedPR,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -237,9 +239,8 @@ class _HomePageState extends State<_HomePage> {
 
 class _Branch extends StatelessWidget {
   const _Branch({
-    Key? key,
     required this.branch,
-  }) : super(key: key);
+  });
 
   final Branch branch;
 
