@@ -278,18 +278,6 @@ class _BranchesIn extends StatelessWidget {
   final bool? isInBeta;
   final bool? isInMaster;
 
-  // TODO(justinmc): Need the emoji package or icons or something. Not good with
-  // the default font in use.
-  String _isInToEmoji(bool? isIn) {
-    if (isIn == null) {
-      return '⌛';
-    }
-    if (isIn) {
-      return '✔️';
-    }
-    return '❌';
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -338,9 +326,15 @@ class _IsIn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (isIn) {
+      // TODO(justinmc): Need the emoji package or icons or something. Not good with
+      // the default font in use.
       true => const Text('✔️'),
       false => const Text('❌'),
-      null => const SizedBox(height: 16.0, child: CircularProgressIndicator.adaptive()),
+      null => const SizedBox(
+        width: 16.0,
+        height: 16.0,
+        child: CircularProgressIndicator.adaptive(),
+      ),
     };
   }
 }
