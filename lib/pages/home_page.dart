@@ -143,61 +143,61 @@ class _HomePageState extends State<_HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Releases Info'),
-        actions: <Widget>[
-          url_launcher_link.Link(
-            uri: Uri.parse('https://www.github.com/justinmc/flutter_releases'),
-            target: url_launcher_link.LinkTarget.blank,
-            builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
-              return IconButton(
-                icon: const Icon(Icons.code),
-                tooltip: 'GitHub',
-                onPressed: followLink,
-              );
+    return SelectionArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Flutter Releases Info'),
+          actions: <Widget>[
+            url_launcher_link.Link(
+              uri: Uri.parse('https://www.github.com/justinmc/flutter_releases'),
+              target: url_launcher_link.LinkTarget.blank,
+              builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+                return IconButton(
+                  icon: const Icon(Icons.code),
+                  tooltip: 'GitHub',
+                  onPressed: followLink,
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.info),
+              tooltip: 'About Flutter Releases Info',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => const _InfoDialog(),
+                );
+              },
+            ),
+            /*
+             // TODO(justinmc): Disabled for prod. Do I want to do this?
+            GithubLoginWidget(
+              githubClientId: githubClientId,
+              githubClientSecret: githubClientSecret,
+              githubScopes: githubScopes,
+              builder: (BuildContext context, httpClient) {
+                return const SizedBox.shrink();
+              },
+            ),
+            */
+            /*
+            IconButton(
+              icon: const Icon(Icons.login),
+              tooltip: 'Login to GitGub',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('This is a snackbar')));
+              },
+            ),
+            */
+          ],
+        ),
+        body: CallbackShortcuts(
+          bindings: <ShortcutActivator, VoidCallback>{
+            const SingleActivator(LogicalKeyboardKey.slash): () {
+              _urlFieldFocusNode.requestFocus();
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.info),
-            tooltip: 'About Flutter Releases Info',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) => const _InfoDialog(),
-              );
-            },
-          ),
-          /*
-           // TODO(justinmc): Disabled for prod. Do I want to do this?
-          GithubLoginWidget(
-            githubClientId: githubClientId,
-            githubClientSecret: githubClientSecret,
-            githubScopes: githubScopes,
-            builder: (BuildContext context, httpClient) {
-              return const SizedBox.shrink();
-            },
-          ),
-          */
-          /*
-          IconButton(
-            icon: const Icon(Icons.login),
-            tooltip: 'Login to GitGub',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('This is a snackbar')));
-            },
-          ),
-          */
-        ],
-      ),
-      body: CallbackShortcuts(
-        bindings: <ShortcutActivator, VoidCallback>{
-          const SingleActivator(LogicalKeyboardKey.slash): () {
-            _urlFieldFocusNode.requestFocus();
           },
-        },
-        child: SelectionArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Center(
@@ -228,14 +228,20 @@ class _HomePageState extends State<_HomePage> {
                   if (widget.master != null)
                     _Branch(branch: widget.master!),
                   // TODO(justinmc): Loading state.
-                  TextField(
-                    focusNode: _urlFieldFocusNode,
-                    enabled: !_loading,
-                    decoration: InputDecoration(
-                      hintText: 'Github PR URL (framework or engine)',
-                      errorText: _error,
+                  Shortcuts(
+                    shortcuts: const <ShortcutActivator, Intent>{
+                      SingleActivator(LogicalKeyboardKey.slash): DoNothingAndStopPropagationIntent(),
+                    },
+                    child: TextField(
+                      autofocus: true,
+                      focusNode: _urlFieldFocusNode,
+                      enabled: !_loading,
+                      decoration: InputDecoration(
+                        hintText: 'Github PR URL (framework or engine)',
+                        errorText: _error,
+                      ),
+                      onSubmitted: _onSubmittedPR,
                     ),
-                    onSubmitted: _onSubmittedPR,
                   ),
                 ],
               ),
