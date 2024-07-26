@@ -1,12 +1,15 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/link.dart' as url_launcher_link;
 
 import '../api.dart' as api;
 //import '../github_oauth_credentials.dart';
 import '../models/branch.dart';
+import '../models/branches.dart';
 import '../models/pr.dart';
+import '../providers/branches_provider.dart';
 //import '../widgets/github_login.dart';
 import '../widgets/link.dart';
 
@@ -21,16 +24,10 @@ class HomePage extends MaterialPage {
     required final DartPRCallback onNavigateToDartPR,
     required final DartGerritPRCallback onNavigateToDartGerritPR,
     required final PRCallback onNavigateToFrameworkPR,
-    final Branch? stable,
-    final Branch? beta,
-    final Branch? master,
   }) : super(
     key: const ValueKey('HomePage'),
     restorationId: 'home-page',
     child: _HomePage(
-      stable: stable,
-      beta: beta,
-      master: master,
       onNavigateToDartPR: onNavigateToDartPR,
       onNavigateToDartGerritPR: onNavigateToDartGerritPR,
       onNavigateToEnginePR: onNavigateToEnginePR,
@@ -39,31 +36,24 @@ class HomePage extends MaterialPage {
   );
 }
 
-class _HomePage extends StatefulWidget {
+class _HomePage extends ConsumerStatefulWidget {
   const _HomePage({
-    Key? key,
     required this.onNavigateToDartPR,
     required this.onNavigateToDartGerritPR,
     required this.onNavigateToEnginePR,
     required this.onNavigateToFrameworkPR,
-    this.stable,
-    this.beta,
-    this.master,
-  }) : super(key: key);
+  });
 
   final DartPRCallback onNavigateToDartPR;
   final DartGerritPRCallback onNavigateToDartGerritPR;
   final EnginePRCallback onNavigateToEnginePR;
   final PRCallback onNavigateToFrameworkPR;
-  final Branch? stable;
-  final Branch? beta;
-  final Branch? master;
 
   @override
-  State<_HomePage> createState() => _HomePageState();
+  ConsumerState<_HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<_HomePage> {
+class _HomePageState extends ConsumerState<_HomePage>  {
   String? _error;
   bool _loading = false;
   final FocusNode _urlFieldFocusNode = FocusNode();
@@ -143,6 +133,8 @@ class _HomePageState extends State<_HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final Branches branches = ref.watch(branchesProvider);
+
     return SelectionArea(
       child: Scaffold(
         appBar: AppBar(
@@ -215,18 +207,18 @@ class _HomePageState extends State<_HomePage> {
                       const Text(':'),
                     ]
                   ),
-                  if (widget.stable == null)
+                  if (branches.stable == null)
                     const Text('Loading stable release...'),
-                  if (widget.beta == null)
+                  if (branches.beta == null)
                     const Text('Loading beta release...'),
-                  if (widget.master == null)
+                  if (branches.master == null)
                     const Text('Loading master release...'),
-                  if (widget.stable != null)
-                    _Branch(branch: widget.stable!),
-                  if (widget.beta != null)
-                    _Branch(branch: widget.beta!),
-                  if (widget.master != null)
-                    _Branch(branch: widget.master!),
+                  if (branches.stable != null)
+                    _Branch(branch: branches.stable!),
+                  if (branches.beta != null)
+                    _Branch(branch: branches.beta!),
+                  if (branches.master != null)
+                    _Branch(branch: branches.master!),
                   // TODO(justinmc): Loading state.
                   Shortcuts(
                     shortcuts: const <ShortcutActivator, Intent>{

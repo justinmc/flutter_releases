@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/pr.dart';
 import 'models/branch.dart';
+import 'models/branches.dart';
 import 'pages/auth_page.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
@@ -166,9 +167,6 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   PR? frameworkPR;
   EnginePR? enginePR;
   DartPR? dartPR;
-  Branch? stable;
-  Branch? beta;
-  Branch? master;
   int? loadingPRNumber;
   String? authCode;
 
@@ -205,8 +203,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.home;
+    final Branches branches = ref.read(branchesProvider);
 
-    if (stable == null || beta == null || master == null) {
+    if (branches.stable == null || branches.beta == null || branches.master == null) {
       try {
         await _getBranches();
       } catch (error) {
@@ -267,13 +266,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   */
 
   Future<void> _getBranches() async {
-    // TODO(justinmc): Do I still need the local branches variables or just use the provider?
-    stable = await api.getBranch(BranchNames.stable);
-    ref.read(branchesProvider.notifier).stable = stable;
-    beta = await api.getBranch(BranchNames.beta);
-    ref.read(branchesProvider.notifier).beta = beta;
-    master = await api.getBranch(BranchNames.master);
-    ref.read(branchesProvider.notifier).master = master;
+    ref.read(branchesProvider.notifier).stable = await api.getBranch(BranchNames.stable);
+    ref.read(branchesProvider.notifier).beta = await api.getBranch(BranchNames.beta);
+    ref.read(branchesProvider.notifier).master = await api.getBranch(BranchNames.master);
   }
 
   @override
@@ -421,9 +416,6 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       restorationScopeId: 'root',
       pages: <Page>[
         HomePage(
-          stable: stable,
-          beta: beta,
-          master: master,
           onNavigateToDartPR: onNavigateToDartPR,
           onNavigateToDartGerritPR: onNavigateToDartGerritPR,
           onNavigateToEnginePR: onNavigateToEnginePR,

@@ -27,9 +27,8 @@ class PRPage extends MaterialPage {
 
 class _PRPage extends ConsumerStatefulWidget {
   const _PRPage({
-    Key? key,
     required this.pr,
-  }) : super(key: key);
+  });
 
   final PR? pr;
 
@@ -268,11 +267,10 @@ class _PRPageState extends ConsumerState<_PRPage> {
 
 class _BranchesIn extends StatelessWidget {
   const _BranchesIn({
-    Key? key,
     this.isInStable,
     this.isInBeta,
     this.isInMaster,
-  }) : super(key: key);
+  });
 
   final bool? isInStable;
   final bool? isInBeta;
