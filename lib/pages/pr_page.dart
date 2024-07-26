@@ -177,12 +177,12 @@ class _PRPageState extends ConsumerState<_PRPage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_title),
-      ),
-      body: SelectionArea(
-        child: Center(
+    return SelectionArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_title),
+        ),
+        body: Center(
           child: Column(
             children: <Widget>[
               SizedBox(
