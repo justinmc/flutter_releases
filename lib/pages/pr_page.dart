@@ -278,6 +278,30 @@ class _BranchesIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    /*
+    // TODO(justinmc): I'm imagining a horizontal chronological progress bar showing whether the PR is in each branch in.
+    return Row(
+      children: <Widget>[
+        switch (isInMaster) {
+          true => const Chip(
+            surfaceTintColor: Colors.green,
+            label: Tooltip(
+              message: '✔️ Released on the master channel on <date>.',
+              child: Text('master'),
+            ),
+          ),
+          false => const Chip(
+            surfaceTintColor: Colors.red,
+            label: Tooltip(
+              message: '❌ Not yet released on the master channel.',
+              child: Text('master'),
+            ),
+          ),
+          null => const CircularProgressIndicator.adaptive(),
+        },
+      ],
+    );
+    */
     return SizedBox(
       width: 120.0,
       child: Column(
