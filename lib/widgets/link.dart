@@ -43,12 +43,15 @@ class Link extends StatelessWidget {
               followLink();
             }
           },
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.blue,
+          child: DefaultSelectionStyle(
+            mouseCursor: SystemMouseCursors.click,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.blue,
+                ),
               ),
             ),
           ),
