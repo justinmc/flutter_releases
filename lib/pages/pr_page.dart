@@ -210,10 +210,14 @@ class _PRPageState extends ConsumerState<_PRPage> {
               if (widget.pr!.status == PRStatus.closed)
                 const Text('Closed'),
               if (widget.pr!.status == PRStatus.merged)
-                _BranchesIn(
-                  isInStable: _isIn(branches.stable),
-                  isInBeta: _isIn(branches.beta),
+                _BranchesInChips(
+                  master: branches.master,
+                  beta: branches.beta,
+                  stable: branches.stable,
                   isInMaster: _isIn(branches.master),
+                  isInBeta: _isIn(branches.beta),
+                  isInStable: _isIn(branches.stable),
+                  mergeDate: widget.pr!.formattedMergedAt!,
                 ),
               // TODO(justinmc): URL launcher Text(''),
               url_launcher_link.Link(
@@ -240,7 +244,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                         ),
                       ),
                       TextSpan(
-                        text: ' merged at ${widget.pr!.formattedMergedAt} into branch ',
+                        text: ' merged on ${widget.pr!.formattedMergedAt} into branch ',
                       ),
                       WidgetSpan(
                         child: Link.fromString(
@@ -265,98 +269,93 @@ class _PRPageState extends ConsumerState<_PRPage> {
   }
 }
 
-class _BranchesIn extends StatelessWidget {
-  const _BranchesIn({
-    this.isInStable,
-    this.isInBeta,
-    this.isInMaster,
+class _BranchesInChips extends StatelessWidget {
+  const _BranchesInChips({
+    required this.master,
+    required this.beta,
+    required this.stable,
+    required this.isInMaster,
+    required this.isInBeta,
+    required this.isInStable,
+    required this.mergeDate,
   });
 
-  final bool? isInStable;
-  final bool? isInBeta;
+  final Branch? master;
+  final Branch? beta;
+  final Branch? stable;
   final bool? isInMaster;
+  final bool? isInBeta;
+  final bool? isInStable;
+  final String mergeDate;
 
   @override
   Widget build(BuildContext context) {
-    /*
-    // TODO(justinmc): I'm imagining a horizontal chronological progress bar showing whether the PR is in each branch in.
     return Row(
       children: <Widget>[
-        switch (isInMaster) {
-          true => const Chip(
-            surfaceTintColor: Colors.green,
-            label: Tooltip(
-              message: '✔️ Released on the master channel on <date>.',
-              child: Text('master'),
-            ),
-          ),
-          false => const Chip(
-            surfaceTintColor: Colors.red,
-            label: Tooltip(
-              message: '❌ Not yet released on the master channel.',
-              child: Text('master'),
-            ),
-          ),
-          null => const CircularProgressIndicator.adaptive(),
-        },
+        // TODO(justinmc): Include a Chip about the PR being merged?
+        const Spacer(),
+        _BranchChip(
+          branch: master,
+          isIn: isInMaster,
+          mergeDate: mergeDate,
+        ),
+        // TODO(justinmc): Arrows in between?
+        const Spacer(),
+        _BranchChip(
+          branch: beta,
+          isIn: isInBeta,
+        ),
+        const Spacer(),
+        _BranchChip(
+          branch: stable,
+          isIn: isInStable,
+        ),
+        const Spacer(),
       ],
-    );
-    */
-    return SizedBox(
-      width: 120.0,
-      child: Column(
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              const Text('master: '),
-              _IsIn(isIn: isInMaster),
-              // TODO(justinmc): Display at what version the PR made it into
-              // each channel. Can you figure that out based on the tags on the
-              // merge commit?
-              // Actually, won't the version number be the same for each
-              // channel?
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              const Text('beta: '),
-              _IsIn(isIn: isInBeta),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              const Text('stable: '),
-              _IsIn(isIn: isInStable),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
 
-class _IsIn extends StatelessWidget {
-  const _IsIn({
+class _BranchChip extends StatelessWidget {
+  const _BranchChip({
+    required this.branch,
     required this.isIn,
+    this.mergeDate,
   });
 
+  final Branch? branch;
   final bool? isIn;
+  final String? mergeDate;
 
   @override
   Widget build(BuildContext context) {
     return switch (isIn) {
-      // TODO(justinmc): Need the emoji package or icons or something. Not good with
-      // the default font in use.
-      true => const Text('✔️'),
-      false => const Text('❌'),
-      null => const SizedBox(
-        width: 16.0,
-        height: 16.0,
-        child: CircularProgressIndicator.adaptive(),
+      true => Flexible(
+        child: Card(
+          color: const Color(0xffcbf0cc),
+          child: ListTile(
+            leading: const Image(image: AssetImage('assets/images/icon_shipped_128.png')),
+            title: Text(branch!.name),
+            subtitle: Text('Released on the ${branch!.name} channel${mergeDate == null ? '' : 'on $mergeDate'}.'),
+          ),
+        ),
       ),
+      false => Flexible(
+        child: Card(
+          color: const Color(0xfff0cbcb),
+          child: ListTile(
+            leading: const Image(image: AssetImage('assets/images/icon_merge_128.png')),
+            title: Text(branch!.name),
+            // TODO(justinmc): Display at what version the PR made it into
+            // each channel. Can you figure that out based on the tags on the
+            // merge commit?
+            // Actually, won't the version number be the same for each
+            // channel?
+            subtitle: Text('Not yet released on the ${branch!.name} channel.'),
+          ),
+        ),
+      ),
+      null => const CircularProgressIndicator.adaptive(),
     };
   }
 }
