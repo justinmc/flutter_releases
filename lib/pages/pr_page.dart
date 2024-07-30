@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
+import 'package:arrow_path/arrow_path.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/link.dart' as url_launcher_link;
 import '../models/branch.dart';
@@ -219,7 +222,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                   isInStable: _isIn(branches.stable),
                   mergeDate: widget.pr!.formattedMergedAt!,
                 ),
-              // TODO(justinmc): URL launcher Text(''),
+              // TODO(justinmc): I think this button is redundant.
               url_launcher_link.Link(
                 uri: Uri.parse(widget.pr!.htmlURL),
                 target: url_launcher_link.LinkTarget.blank,
@@ -290,25 +293,39 @@ class _BranchesInChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (master == null || beta == null || stable == null
+      || isInMaster == null || isInBeta == null || isInStable == null) {
+      return const CircularProgressIndicator.adaptive();
+    }
     return Row(
       children: <Widget>[
         // TODO(justinmc): Include a Chip about the PR being merged?
         const Spacer(),
         _BranchChip(
-          branch: master,
-          isIn: isInMaster,
+          branch: master!,
+          isIn: isInMaster!,
           mergeDate: mergeDate,
         ),
         // TODO(justinmc): Arrows in between?
-        const Spacer(),
-        _BranchChip(
-          branch: beta,
-          isIn: isInBeta,
+        ClipRect(
+          child: CustomPaint(
+            size: const Size(200.0, 100.0),
+            painter: _ArrowPainter(),
+          ),
         ),
-        const Spacer(),
         _BranchChip(
-          branch: stable,
-          isIn: isInStable,
+          branch: beta!,
+          isIn: isInBeta!,
+        ),
+        ClipRect(
+          child: CustomPaint(
+            size: const Size(200.0, 100.0),
+            painter: _ArrowPainter(),
+          ),
+        ),
+        _BranchChip(
+          branch: stable!,
+          isIn: isInStable!,
         ),
         const Spacer(),
       ],
@@ -323,8 +340,8 @@ class _BranchChip extends StatelessWidget {
     this.mergeDate,
   });
 
-  final Branch? branch;
-  final bool? isIn;
+  final Branch branch;
+  final bool isIn;
   final String? mergeDate;
 
   @override
@@ -335,27 +352,48 @@ class _BranchChip extends StatelessWidget {
           color: const Color(0xffcbf0cc),
           child: ListTile(
             leading: const Image(image: AssetImage('assets/images/icon_shipped_128.png')),
-            title: Text(branch!.name),
-            subtitle: Text('Released on the ${branch!.name} channel${mergeDate == null ? '' : 'on $mergeDate'}.'),
+            title: Text(branch.name),
+            subtitle: Text('Released on the ${branch.name} channel${mergeDate == null ? '' : 'on $mergeDate'}.'),
           ),
         ),
       ),
       false => Flexible(
         child: Card(
-          color: const Color(0xfff0cbcb),
+          color: const Color(0xfff9efc7),
           child: ListTile(
             leading: const Image(image: AssetImage('assets/images/icon_merge_128.png')),
-            title: Text(branch!.name),
+            title: Text(branch.name),
             // TODO(justinmc): Display at what version the PR made it into
             // each channel. Can you figure that out based on the tags on the
             // merge commit?
             // Actually, won't the version number be the same for each
             // channel?
-            subtitle: Text('Not yet released on the ${branch!.name} channel.'),
+            subtitle: Text('Not yet released on the ${branch.name} channel.'),
           ),
         ),
       ),
-      null => const CircularProgressIndicator.adaptive(),
     };
   }
+}
+
+class _ArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 3.0;
+
+    Path path = Path();
+    path.moveTo(size.width * 0.25, 60.0);
+    path.relativeCubicTo(0, 0, size.width * 0.25, 50, size.width * 0.5, 0);
+    path = ArrowPath.addTip(path);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_ArrowPainter oldDelegate) => false;
 }
