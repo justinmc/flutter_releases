@@ -1,3 +1,5 @@
+import '../constants.dart';
+
 enum PRStatus {
   open,
   draft,
@@ -64,6 +66,11 @@ class PR {
   }
 
   String? get mergeCommitShortSHA => mergeCommitSHA?.substring(0, 7);
+
+  String get mergeCommitUrl {
+    assert(mergeCommitSHA != null);
+    return '$kGitHubFlutter/commit/$mergeCommitSHA';
+  }
 
   @override
   String toString() {

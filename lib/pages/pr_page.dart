@@ -1,18 +1,14 @@
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
 import 'package:arrow_path/arrow_path.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/link.dart' as url_launcher_link;
 import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
 import '../api.dart' as api;
 import '../providers/branches_provider.dart';
 import '../widgets/link.dart';
-
-import '../constants.dart';
 
 class PRPage extends MaterialPage {
   PRPage({
@@ -205,7 +201,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                     ],
                   ),
                 ),
-                // TODO(justinmc): Some colors for these statuses like on GitHub?
+                // TODO(justinmc): Remove these once the chip covers them all.
                 if (widget.pr!.status == PRStatus.open)
                   const Text('Open'),
                 if (widget.pr!.status == PRStatus.draft)
@@ -214,6 +210,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                   const Text('Merged'),
                 if (widget.pr!.status == PRStatus.closed)
                   const Text('Closed'),
+                // TODO(justinmc): When refreshing page, I briefly see all branches but with yellow status. Pop-in from isIn?
                 if (widget.pr!.status == PRStatus.merged)
                   _BranchesInChips(
                     master: branches.master,
@@ -222,32 +219,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                     isInMaster: _isIn(branches.master),
                     isInBeta: _isIn(branches.beta),
                     isInStable: _isIn(branches.stable),
-                    mergeDate: widget.pr!.formattedMergedAt!,
-                  ),
-                if (widget.pr!.status == PRStatus.merged)
-                  Text.rich(
-                    TextSpan(
-                      children: <InlineSpan>[
-                        WidgetSpan(
-                          child: Link.fromString(
-                            text: widget.pr!.mergeCommitShortSHA!,
-                            url: '$kGitHubFlutter/commit/${widget.pr!.mergeCommitSHA}',
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' merged on ${widget.pr!.formattedMergedAt} into branch ',
-                        ),
-                        WidgetSpan(
-                          child: Link.fromString(
-                            text: widget.pr!.branch,
-                            url: '$kGitHubFlutter/tree/${widget.pr!.branch}',
-                          ),
-                        ),
-                        const TextSpan(
-                          text: '.',
-                        ),
-                      ],
-                    ),
+                    pr: widget.pr!,
                   ),
                 if (widget.pr!.status == PRStatus.merged)
                   // TODO(justinmc): Can I find reverts of a PR and fix this?
@@ -269,7 +241,7 @@ class _BranchesInChips extends StatelessWidget {
     required this.isInMaster,
     required this.isInBeta,
     required this.isInStable,
-    required this.mergeDate,
+    required this.pr,
   });
 
   final Branch? master;
@@ -278,7 +250,7 @@ class _BranchesInChips extends StatelessWidget {
   final bool? isInMaster;
   final bool? isInBeta;
   final bool? isInStable;
-  final String mergeDate;
+  final PR pr;
 
   @override
   Widget build(BuildContext context) {
@@ -288,34 +260,78 @@ class _BranchesInChips extends StatelessWidget {
     }
     return Row(
       children: <Widget>[
-        // TODO(justinmc): Include a Chip about the PR being merged?
+        Flexible(
+          child: Card(
+            color: const Color(0xffcbf0cc),
+            child: ListTile(
+              leading: const SizedBox(
+                width: 32.0,
+                child: Image(image: AssetImage('assets/images/icon_merge_128.png')),
+              ),
+              title: Text.rich(
+                TextSpan(
+                  text: 'PR ',
+                  children: <InlineSpan>[
+                    WidgetSpan(
+                      child: Link.fromString(
+                        text: '#${pr.number.toString()}',
+                        url: pr.mergeCommitUrl,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              subtitle: Text.rich(
+                TextSpan(
+                  text: 'Merged in commit ',
+                  children: <InlineSpan>[
+                    WidgetSpan(
+                      child: Link.fromString(
+                        text: pr.mergeCommitShortSHA!,
+                        url: pr.mergeCommitUrl,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' on ${pr.formattedMergedAt}.',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const _Arrow(),
         _BranchChip(
           branch: master!,
           isIn: isInMaster!,
-          mergeDate: mergeDate,
+          mergeDate: pr.formattedMergedAt!,
         ),
-        // TODO(justinmc): Arrows in between?
-        ClipRect(
-          child: CustomPaint(
-            size: const Size(200.0, 100.0),
-            painter: _ArrowPainter(),
-          ),
-        ),
+        const _Arrow(),
         _BranchChip(
           branch: beta!,
           isIn: isInBeta!,
         ),
-        ClipRect(
-          child: CustomPaint(
-            size: const Size(200.0, 100.0),
-            painter: _ArrowPainter(),
-          ),
-        ),
+        const _Arrow(),
         _BranchChip(
           branch: stable!,
           isIn: isInStable!,
         ),
       ],
+    );
+  }
+}
+
+// TODO(justinmc): Too low and too bendy.
+class _Arrow extends StatelessWidget {
+  const _Arrow();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: CustomPaint(
+        size: const Size(120.0, 100.0),
+        painter: _ArrowPainter(),
+      ),
     );
   }
 }
@@ -338,9 +354,37 @@ class _BranchChip extends StatelessWidget {
         child: Card(
           color: const Color(0xffcbf0cc),
           child: ListTile(
-            leading: const Image(image: AssetImage('assets/images/icon_shipped_128.png')),
+            leading: const SizedBox(
+              width: 32.0,
+              child: Image(image: AssetImage('assets/images/icon_shipped_128.png')),
+            ),
             title: Text(branch.name),
-            subtitle: Text('Released on the ${branch.name} channel${mergeDate == null ? '' : ' on $mergeDate'}.'),
+            subtitle: Text.rich(
+              TextSpan(
+                text: 'Released on the ${branch.name} channel',
+                children: <InlineSpan>[
+                  if (branch.tagName != null)
+                    TextSpan(
+                      text: ' in ',
+                      children: <InlineSpan>[
+                        WidgetSpan(
+                          child: Link.fromString(
+                            text: 'v${branch.tagName}',
+                            url: branch.tagUrl,
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (mergeDate != null)
+                    TextSpan(
+                      text: ' on $mergeDate',
+                    ),
+                  const TextSpan(
+                    text: '.',
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -348,7 +392,10 @@ class _BranchChip extends StatelessWidget {
         child: Card(
           color: const Color(0xfff9efc7),
           child: ListTile(
-            leading: const Image(image: AssetImage('assets/images/icon_merge_128.png')),
+            leading: const SizedBox(
+              width: 32.0,
+              child: Image(image: AssetImage('assets/images/icon_pending_merge_128.png')),
+            ),
             title: Text(branch.name),
             // TODO(justinmc): Display at what version the PR made it into
             // each channel. Can you figure that out based on the tags on the

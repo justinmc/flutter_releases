@@ -41,10 +41,14 @@ class Branch {
     return '${localTime.year}-${localTime.month}-${localTime.day}';
   }
 
-  Uri get tagUri {
+  String get tagUrl {
     assert(tagName != null);
 
-    return Uri.parse('$kGitHubFlutter/releases/tag/$tagName');
+    return '$kGitHubFlutter/releases/tag/$tagName';
+  }
+
+  Uri get tagUri {
+    return Uri.parse(tagUrl);
   }
 
   Branch copyWith({
