@@ -184,87 +184,90 @@ class _PRPageState extends ConsumerState<_PRPage> {
         appBar: AppBar(
           title: Text(_title),
         ),
-        body: Center(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                width: 200.0,
-                child: Row(
-                  children: <Widget>[
-                    Link.fromString(
-                      text: '#${widget.pr!.number}',
-                      url: widget.pr!.htmlURL,
-                    ),
-                    const Text(' by '),
-                    Link.fromString(
-                      text: widget.pr!.user,
-                      url: 'https://www.github.com/${widget.pr!.user}',
-                    ),
-                  ],
-                ),
-              ),
-              // TODO(justinmc): Some colors for these statuses like on GitHub?
-              if (widget.pr!.status == PRStatus.open)
-                const Text('Open'),
-              if (widget.pr!.status == PRStatus.draft)
-                const Text('Draft'),
-              if (widget.pr!.status == PRStatus.merged)
-                const Text('Merged'),
-              if (widget.pr!.status == PRStatus.closed)
-                const Text('Closed'),
-              if (widget.pr!.status == PRStatus.merged)
-                _BranchesInChips(
-                  master: branches.master,
-                  beta: branches.beta,
-                  stable: branches.stable,
-                  isInMaster: _isIn(branches.master),
-                  isInBeta: _isIn(branches.beta),
-                  isInStable: _isIn(branches.stable),
-                  mergeDate: widget.pr!.formattedMergedAt!,
-                ),
-              // TODO(justinmc): I think this button is redundant.
-              url_launcher_link.Link(
-                uri: Uri.parse(widget.pr!.htmlURL),
-                target: url_launcher_link.LinkTarget.blank,
-                builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
-                  return TextButton(
-                    style: TextButton.styleFrom(
-                      textStyle: const TextStyle(fontSize: 20),
-                    ),
-                    onPressed: followLink,
-                    child: const Text('View PR on Github'),
-                  );
-                },
-              ),
-              if (widget.pr!.status == PRStatus.merged)
-                Text.rich(
-                  TextSpan(
-                    children: <InlineSpan>[
-                      WidgetSpan(
-                        child: Link.fromString(
-                          text: widget.pr!.mergeCommitShortSHA!,
-                          url: '$kGitHubFlutter/commit/${widget.pr!.mergeCommitSHA}',
-                        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                SizedBox(
+                  width: 200.0,
+                  child: Row(
+                    children: <Widget>[
+                      Link.fromString(
+                        text: '#${widget.pr!.number}',
+                        url: widget.pr!.htmlURL,
                       ),
-                      TextSpan(
-                        text: ' merged on ${widget.pr!.formattedMergedAt} into branch ',
-                      ),
-                      WidgetSpan(
-                        child: Link.fromString(
-                          text: widget.pr!.branch,
-                          url: '$kGitHubFlutter/tree/${widget.pr!.branch}',
-                        ),
-                      ),
-                      const TextSpan(
-                        text: '.',
+                      const Text(' by '),
+                      Link.fromString(
+                        text: widget.pr!.user,
+                        url: 'https://www.github.com/${widget.pr!.user}',
                       ),
                     ],
                   ),
                 ),
-              if (widget.pr!.status == PRStatus.merged)
-                // TODO(justinmc): Can I find reverts of a PR and fix this?
-                const Text('Note that this does not consider if this PR was reverted!'),
-            ],
+                // TODO(justinmc): Some colors for these statuses like on GitHub?
+                if (widget.pr!.status == PRStatus.open)
+                  const Text('Open'),
+                if (widget.pr!.status == PRStatus.draft)
+                  const Text('Draft'),
+                if (widget.pr!.status == PRStatus.merged)
+                  const Text('Merged'),
+                if (widget.pr!.status == PRStatus.closed)
+                  const Text('Closed'),
+                if (widget.pr!.status == PRStatus.merged)
+                  _BranchesInChips(
+                    master: branches.master,
+                    beta: branches.beta,
+                    stable: branches.stable,
+                    isInMaster: _isIn(branches.master),
+                    isInBeta: _isIn(branches.beta),
+                    isInStable: _isIn(branches.stable),
+                    mergeDate: widget.pr!.formattedMergedAt!,
+                  ),
+                // TODO(justinmc): I think this button is redundant.
+                url_launcher_link.Link(
+                  uri: Uri.parse(widget.pr!.htmlURL),
+                  target: url_launcher_link.LinkTarget.blank,
+                  builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+                    return TextButton(
+                      style: TextButton.styleFrom(
+                        textStyle: const TextStyle(fontSize: 20),
+                      ),
+                      onPressed: followLink,
+                      child: const Text('View PR on Github'),
+                    );
+                  },
+                ),
+                if (widget.pr!.status == PRStatus.merged)
+                  Text.rich(
+                    TextSpan(
+                      children: <InlineSpan>[
+                        WidgetSpan(
+                          child: Link.fromString(
+                            text: widget.pr!.mergeCommitShortSHA!,
+                            url: '$kGitHubFlutter/commit/${widget.pr!.mergeCommitSHA}',
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' merged on ${widget.pr!.formattedMergedAt} into branch ',
+                        ),
+                        WidgetSpan(
+                          child: Link.fromString(
+                            text: widget.pr!.branch,
+                            url: '$kGitHubFlutter/tree/${widget.pr!.branch}',
+                          ),
+                        ),
+                        const TextSpan(
+                          text: '.',
+                        ),
+                      ],
+                    ),
+                  ),
+                if (widget.pr!.status == PRStatus.merged)
+                  // TODO(justinmc): Can I find reverts of a PR and fix this?
+                  const Text('Note that this does not consider if this PR was reverted!'),
+              ],
+            ),
           ),
         ),
       ),
@@ -300,7 +303,6 @@ class _BranchesInChips extends StatelessWidget {
     return Row(
       children: <Widget>[
         // TODO(justinmc): Include a Chip about the PR being merged?
-        const Spacer(),
         _BranchChip(
           branch: master!,
           isIn: isInMaster!,
@@ -327,7 +329,6 @@ class _BranchesInChips extends StatelessWidget {
           branch: stable!,
           isIn: isInStable!,
         ),
-        const Spacer(),
       ],
     );
   }
@@ -353,7 +354,7 @@ class _BranchChip extends StatelessWidget {
           child: ListTile(
             leading: const Image(image: AssetImage('assets/images/icon_shipped_128.png')),
             title: Text(branch.name),
-            subtitle: Text('Released on the ${branch.name} channel${mergeDate == null ? '' : 'on $mergeDate'}.'),
+            subtitle: Text('Released on the ${branch.name} channel${mergeDate == null ? '' : ' on $mergeDate'}.'),
           ),
         ),
       ),
