@@ -224,20 +224,6 @@ class _PRPageState extends ConsumerState<_PRPage> {
                     isInStable: _isIn(branches.stable),
                     mergeDate: widget.pr!.formattedMergedAt!,
                   ),
-                // TODO(justinmc): I think this button is redundant.
-                url_launcher_link.Link(
-                  uri: Uri.parse(widget.pr!.htmlURL),
-                  target: url_launcher_link.LinkTarget.blank,
-                  builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
-                    return TextButton(
-                      style: TextButton.styleFrom(
-                        textStyle: const TextStyle(fontSize: 20),
-                      ),
-                      onPressed: followLink,
-                      child: const Text('View PR on Github'),
-                    );
-                  },
-                ),
                 if (widget.pr!.status == PRStatus.merged)
                   Text.rich(
                     TextSpan(
