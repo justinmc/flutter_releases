@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:arrow_path/arrow_path.dart';
@@ -260,45 +259,8 @@ class _BranchesInChips extends StatelessWidget {
     }
     return Row(
       children: <Widget>[
-        Flexible(
-          child: Card(
-            color: const Color(0xffcbf0cc),
-            child: ListTile(
-              leading: const SizedBox(
-                width: 32.0,
-                child: Image(image: AssetImage('assets/images/icon_merge_128.png')),
-              ),
-              title: Text.rich(
-                TextSpan(
-                  text: 'PR ',
-                  children: <InlineSpan>[
-                    WidgetSpan(
-                      child: Link.fromString(
-                        text: '#${pr.number.toString()}',
-                        url: pr.mergeCommitUrl,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              subtitle: Text.rich(
-                TextSpan(
-                  text: 'Merged in commit ',
-                  children: <InlineSpan>[
-                    WidgetSpan(
-                      child: Link.fromString(
-                        text: pr.mergeCommitShortSHA!,
-                        url: pr.mergeCommitUrl,
-                      ),
-                    ),
-                    TextSpan(
-                      text: ' on ${pr.formattedMergedAt}.',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        _PRChip(
+          pr: pr,
         ),
         const _Arrow(),
         _BranchChip(
@@ -317,6 +279,58 @@ class _BranchesInChips extends StatelessWidget {
           isIn: isInStable!,
         ),
       ],
+    );
+  }
+}
+
+class _PRChip extends StatelessWidget {
+  const _PRChip({
+    required this.pr,
+  });
+
+  final PR pr;
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      child: Card(
+        color: const Color(0xffcbf0cc),
+        child: ListTile(
+          leading: const SizedBox(
+            width: 32.0,
+            child: Image(image: AssetImage('assets/images/icon_merge_128.png')),
+          ),
+          title: Text.rich(
+            TextSpan(
+              text: 'PR ',
+              children: <InlineSpan>[
+                WidgetSpan(
+                  child: Link.fromString(
+                    text: '#${pr.number.toString()}',
+                    url: pr.htmlURL,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          subtitle: Text.rich(
+            TextSpan(
+              text: 'Merged in commit ',
+              children: <InlineSpan>[
+                WidgetSpan(
+                  child: Link.fromString(
+                    text: pr.mergeCommitShortSHA!,
+                    url: pr.mergeCommitUrl,
+                  ),
+                ),
+                TextSpan(
+                  text: ' on ${pr.formattedMergedAt}.',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
