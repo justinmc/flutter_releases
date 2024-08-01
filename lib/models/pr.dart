@@ -13,6 +13,7 @@ class PR {
     required this.branch,
     required this.htmlURL,
     required this.number,
+    required this.repoName,
     required this.state,
     required this.title,
     required this.user,
@@ -28,6 +29,7 @@ class PR {
       number = jsonMap['number'],
       state = jsonMap['state'],
       htmlURL = jsonMap['html_url'],
+      repoName = jsonMap['head']['repo']['full_name'],
       title = jsonMap['title'],
       user = jsonMap['user']['login'];
 
@@ -36,6 +38,7 @@ class PR {
   final String branch;
   final String htmlURL;
   final int number;
+  final String repoName;
   final String state;
   final String title;
   final String user;
@@ -72,6 +75,10 @@ class PR {
     return '$kGitHubFlutter/commit/$mergeCommitSHA';
   }
 
+  String get repoUrl => '$kGitHub/$repoName';
+
+  String get userUrl => '$kGitHub/$user';
+
   @override
   String toString() {
     return 'PR {number: $number, mergeCommitSHA: $mergeCommitSHA, mergedAt: $mergedAt, branch: $branch, htmlURL: $htmlURL}';
@@ -87,6 +94,7 @@ class EnginePR extends PR {
     branch: enginePr.branch,
     htmlURL: enginePr.htmlURL,
     number: enginePr.number,
+    repoName: 'flutter/engine',
     state: enginePr.state,
     title: enginePr.title,
     user: enginePr.user,
@@ -107,6 +115,7 @@ class DartPR extends PR {
     branch: dartPr.branch,
     htmlURL: dartPr.htmlURL,
     number: dartPr.number,
+    repoName: 'dart-lang/sdk',
     state: dartPr.state,
     title: dartPr.title,
     user: dartPr.user,

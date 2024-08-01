@@ -184,21 +184,24 @@ class _PRPageState extends ConsumerState<_PRPage> {
           child: Center(
             child: Column(
               children: <Widget>[
-                SizedBox(
-                  width: 200.0,
-                  child: Row(
-                    children: <Widget>[
-                      Link.fromString(
-                        text: '#${widget.pr!.number}',
-                        url: widget.pr!.htmlURL,
-                      ),
-                      const Text(' by '),
-                      Link.fromString(
-                        text: widget.pr!.user,
-                        url: 'https://www.github.com/${widget.pr!.user}',
-                      ),
-                    ],
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Link.fromString(
+                      text: '#${widget.pr!.number}',
+                      url: widget.pr!.htmlURL,
+                    ),
+                    const Text(' by '),
+                    Link.fromString(
+                      text: widget.pr!.user,
+                      url: widget.pr!.userUrl,
+                    ),
+                    const Text(' in repo '),
+                    Link.fromString(
+                      text: widget.pr!.repoName,
+                      url: widget.pr!.repoUrl,
+                    ),
+                  ],
                 ),
                 // TODO(justinmc): Remove these once the chip covers them all.
                 if (widget.pr!.status == PRStatus.open)
