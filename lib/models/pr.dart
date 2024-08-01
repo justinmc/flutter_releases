@@ -11,6 +11,7 @@ enum PRStatus {
 class PR {
   const PR({
     required this.branch,
+    required this.draft,
     required this.htmlURL,
     required this.number,
     required this.repoName,
@@ -26,6 +27,7 @@ class PR {
   ) : mergeCommitSHA = jsonMap['merge_commit_sha'],
       mergedAt = jsonMap['merged_at'] == null ? null : DateTime.parse(jsonMap['merged_at']),
       branch = jsonMap['base']['ref'],
+      draft = jsonMap['draft'] == true,
       number = jsonMap['number'],
       state = jsonMap['state'],
       htmlURL = jsonMap['html_url'],
@@ -36,6 +38,7 @@ class PR {
   final String? mergeCommitSHA;
   final DateTime? mergedAt;
   final String branch;
+  final bool draft;
   final String htmlURL;
   final int number;
   final String repoName;
@@ -46,11 +49,11 @@ class PR {
   bool get isMerged => mergedAt != null;
 
   PRStatus get status {
+    if (draft) {
+      return PRStatus.draft;
+    }
     if (state == 'open') {
       return PRStatus.open;
-    }
-    if (state == 'draft') {
-      return PRStatus.draft;
     }
     if (mergedAt == null) {
       return PRStatus.closed;
@@ -72,7 +75,7 @@ class PR {
 
   String get mergeCommitUrl {
     assert(mergeCommitSHA != null);
-    return '$kGitHub/$repoName/$mergeCommitSHA';
+    return '$kGitHub/commit/$mergeCommitSHA';
   }
 
   String get repoUrl => '$kGitHub/$repoName';
@@ -92,6 +95,7 @@ class EnginePR extends PR {
     this.rollPR,
   }) : super(
     branch: enginePr.branch,
+    draft: enginePr.draft,
     htmlURL: enginePr.htmlURL,
     number: enginePr.number,
     repoName: 'flutter/engine',
@@ -113,6 +117,7 @@ class DartPR extends PR {
     this.rollPR,
   }) : super(
     branch: dartPr.branch,
+    draft: dartPr.draft,
     htmlURL: dartPr.htmlURL,
     number: dartPr.number,
     repoName: 'dart-lang/sdk',

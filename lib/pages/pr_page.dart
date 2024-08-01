@@ -206,7 +206,6 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 // TODO(justinmc): Remove these once the chip covers them all.
                 if (widget.pr!.status == PRStatus.open)
                   const Text('Open'),
-                // TODO(justinmc): Draft doesn't seem to work! Always gives me status open.
                 if (widget.pr!.status == PRStatus.draft)
                   const Text('Draft'),
                 if (widget.pr!.status == PRStatus.merged)
