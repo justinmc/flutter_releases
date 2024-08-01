@@ -206,6 +206,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 // TODO(justinmc): Remove these once the chip covers them all.
                 if (widget.pr!.status == PRStatus.open)
                   const Text('Open'),
+                // TODO(justinmc): Draft doesn't seem to work! Always gives me status open.
                 if (widget.pr!.status == PRStatus.draft)
                   const Text('Draft'),
                 if (widget.pr!.status == PRStatus.merged)
@@ -213,16 +214,15 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 if (widget.pr!.status == PRStatus.closed)
                   const Text('Closed'),
                 // TODO(justinmc): When refreshing page, I briefly see all branches but with yellow status. Pop-in from isIn?
-                if (widget.pr!.status == PRStatus.merged)
-                  _BranchesInChips(
-                    master: branches.master,
-                    beta: branches.beta,
-                    stable: branches.stable,
-                    isInMaster: _isIn(branches.master),
-                    isInBeta: _isIn(branches.beta),
-                    isInStable: _isIn(branches.stable),
-                    pr: widget.pr!,
-                  ),
+                _BranchesInChips(
+                  master: branches.master,
+                  beta: branches.beta,
+                  stable: branches.stable,
+                  isInMaster: _isIn(branches.master),
+                  isInBeta: _isIn(branches.beta),
+                  isInStable: _isIn(branches.stable),
+                  pr: widget.pr!,
+                ),
                 if (widget.pr!.status == PRStatus.merged)
                   // TODO(justinmc): Can I find reverts of a PR and fix this?
                   const Text('Note that this does not consider if this PR was reverted!'),
@@ -254,10 +254,12 @@ class _BranchesInChips extends StatelessWidget {
   final bool? isInStable;
   final PR pr;
 
+  bool get _isLoading => master == null || beta == null || stable == null
+      || isInMaster == null || isInBeta == null || isInStable == null;
+
   @override
   Widget build(BuildContext context) {
-    if (master == null || beta == null || stable == null
-      || isInMaster == null || isInBeta == null || isInStable == null) {
+    if (_isLoading) {
       return const CircularProgressIndicator.adaptive();
     }
     return Row(
@@ -269,17 +271,20 @@ class _BranchesInChips extends StatelessWidget {
         _BranchChip(
           branch: master!,
           isIn: isInMaster!,
-          mergeDate: pr.formattedMergedAt!,
+          mergeDate: pr.formattedMergedAt,
+          prClosed: pr.status == PRStatus.closed,
         ),
         const _Arrow(),
         _BranchChip(
           branch: beta!,
           isIn: isInBeta!,
+          prClosed: pr.status == PRStatus.closed,
         ),
         const _Arrow(),
         _BranchChip(
           branch: stable!,
           isIn: isInStable!,
+          prClosed: pr.status == PRStatus.closed,
         ),
       ],
     );
@@ -293,15 +298,55 @@ class _PRChip extends StatelessWidget {
 
   final PR pr;
 
+  static const String _iconPathPendingMerge = 'assets/images/icon_pending_merge_128.png';
+  static const String _iconPathMerge = 'assets/images/icon_merge_128.png';
+  static const String _iconPathClosed = 'assets/images/icon_closed_128.png';
+  static const String _iconPathShipped = 'assets/images/icon_shipped_128.png';
+  static const String _iconPathNeverMerged = 'assets/images/icon_never_merged_128.png';
+
+  Color get _color => switch (pr.status) {
+    PRStatus.open => _BranchChip._pendingColor,
+    PRStatus.draft => _BranchChip._draftColor,
+    PRStatus.merged => _BranchChip._doneColor,
+    PRStatus.closed => _BranchChip._closedColor,
+  };
+
+  String get _iconPath => switch (pr.status) {
+    PRStatus.open => _iconPathPendingMerge,
+    PRStatus.draft => _iconPathPendingMerge,
+    PRStatus.merged => _iconPathMerge,
+    PRStatus.closed => _iconPathClosed,
+  };
+
+  TextSpan get _statusText => switch (pr.status) {
+    PRStatus.open => const TextSpan(text: ' still open.'),
+    PRStatus.draft => const TextSpan(text: ' still in draft.'),
+    PRStatus.merged => TextSpan(
+      text: 'Merged in commit ',
+      children: <InlineSpan>[
+        WidgetSpan(
+          child: Link.fromString(
+            text: pr.mergeCommitShortSHA!,
+            url: pr.mergeCommitUrl,
+          ),
+        ),
+        TextSpan(
+          text: ' on ${pr.formattedMergedAt}.',
+        ),
+      ],
+    ),
+    PRStatus.closed => const TextSpan(text: ' closed without merge.'),
+  };
+
   @override
   Widget build(BuildContext context) {
     return Flexible(
       child: Card(
-        color: const Color(0xffcbf0cc),
+        color: _color,
         child: ListTile(
-          leading: const SizedBox(
+          leading: SizedBox(
             width: 32.0,
-            child: Image(image: AssetImage('assets/images/icon_merge_128.png')),
+            child: Image(image: AssetImage(_iconPath)),
           ),
           title: Text.rich(
             TextSpan(
@@ -316,22 +361,7 @@ class _PRChip extends StatelessWidget {
               ],
             ),
           ),
-          subtitle: Text.rich(
-            TextSpan(
-              text: 'Merged in commit ',
-              children: <InlineSpan>[
-                WidgetSpan(
-                  child: Link.fromString(
-                    text: pr.mergeCommitShortSHA!,
-                    url: pr.mergeCommitUrl,
-                  ),
-                ),
-                TextSpan(
-                  text: ' on ${pr.formattedMergedAt}.',
-                ),
-              ],
-            ),
-          ),
+          subtitle: Text.rich(_statusText),
         ),
       ),
     );
@@ -357,23 +387,30 @@ class _BranchChip extends StatelessWidget {
   const _BranchChip({
     required this.branch,
     required this.isIn,
+    required this.prClosed,
     this.mergeDate,
   });
 
   final Branch branch;
   final bool isIn;
   final String? mergeDate;
+  final bool prClosed;
+
+  static const Color _doneColor = Color(0xffcbf0cc);
+  static const Color _pendingColor = Color(0xfff9efc7);
+  static const Color _closedColor = Color(0xfff7c4c4);
+  static const Color _draftColor = Color(0xfff7f2fa);
 
   @override
   Widget build(BuildContext context) {
     return switch (isIn) {
       true => Flexible(
         child: Card(
-          color: const Color(0xffcbf0cc),
+          color: _doneColor,
           child: ListTile(
             leading: const SizedBox(
               width: 32.0,
-              child: Image(image: AssetImage('assets/images/icon_shipped_128.png')),
+              child: Image(image: AssetImage(_PRChip._iconPathShipped)),
             ),
             title: Text(branch.name),
             subtitle: Text.rich(
@@ -407,11 +444,13 @@ class _BranchChip extends StatelessWidget {
       ),
       false => Flexible(
         child: Card(
-          color: const Color(0xfff9efc7),
+          color: prClosed ? _closedColor : _pendingColor,
           child: ListTile(
-            leading: const SizedBox(
+            leading: SizedBox(
               width: 32.0,
-              child: Image(image: AssetImage('assets/images/icon_pending_merge_128.png')),
+              child: Image(
+                image: AssetImage(prClosed ? _PRChip._iconPathNeverMerged : _PRChip._iconPathPendingMerge),
+              ),
             ),
             title: Text(branch.name),
             // TODO(justinmc): Display at what version the PR made it into
@@ -419,7 +458,9 @@ class _BranchChip extends StatelessWidget {
             // merge commit?
             // Actually, won't the version number be the same for each
             // channel?
-            subtitle: Text('Not yet released on the ${branch.name} channel.'),
+            subtitle: prClosed
+                ? Text('Never released on the ${branch.name} channel.')
+                : Text('Not yet released on the ${branch.name} channel.'),
           ),
         ),
       ),

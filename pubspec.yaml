@@ -69,6 +69,8 @@ flutter:
     - assets/images/icon_merge_128.png
     - assets/images/icon_pending_merge_128.png
     - assets/images/icon_shipped_128.png
+    - assets/images/icon_closed_128.png
+    - assets/images/icon_never_merged_128.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
