@@ -72,7 +72,7 @@ class PR {
 
   String get mergeCommitUrl {
     assert(mergeCommitSHA != null);
-    return '$kGitHubFlutter/commit/$mergeCommitSHA';
+    return '$kGitHub/$repoName/$mergeCommitSHA';
   }
 
   String get repoUrl => '$kGitHub/$repoName';
