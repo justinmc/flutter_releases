@@ -7,7 +7,6 @@ enum PRStatus {
   closed,
 }
 
-// TODO(justinmc): Add repo name to this?
 class PR {
   const PR({
     required this.branch,
