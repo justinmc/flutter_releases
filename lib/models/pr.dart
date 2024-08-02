@@ -49,14 +49,17 @@ class PR {
   bool get isMerged => mergedAt != null;
 
   PRStatus get status {
-    if (draft) {
-      return PRStatus.draft;
+    if (mergedAt == null) {
+      if (state == 'closed') {
+        return PRStatus.closed;
+      }
+      if (draft) {
+        return PRStatus.draft;
+      }
+      assert(true, 'Weird status.');
     }
     if (state == 'open') {
       return PRStatus.open;
-    }
-    if (mergedAt == null) {
-      return PRStatus.closed;
     }
     return PRStatus.merged;
   }
