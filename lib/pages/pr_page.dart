@@ -141,13 +141,13 @@ class _PRPageState extends ConsumerState<_PRPage> {
 
   @override
   void initState() {
+    super.initState();
     // TODO(justinmc): Cache this isin data.
     _updateIsIns().then((_) {
       setState(() {
         _finishedLoadingIsIns = true;
       });
     });
-    super.initState();
   }
 
   @override
@@ -203,7 +203,6 @@ class _PRPageState extends ConsumerState<_PRPage> {
                     ),
                   ],
                 ),
-                // TODO(justinmc): Remove these once the chip covers them all.
                 if (widget.pr!.status == PRStatus.open)
                   const Text('Open'),
                 if (widget.pr!.status == PRStatus.draft)
@@ -422,6 +421,7 @@ class _BranchChip extends StatelessWidget {
                       children: <InlineSpan>[
                         WidgetSpan(
                           child: Link.fromString(
+                            // TODO(justinmc): I see a higher version in beta than in stable, is that right??
                             text: 'v${branch.tagName}',
                             url: branch.tagUrl,
                           ),
