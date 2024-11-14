@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_repo_info/widgets/settings_dialog_home.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/link.dart' as url_launcher_link;
@@ -12,6 +13,7 @@ import '../models/pr.dart';
 import '../providers/branches_provider.dart';
 //import '../widgets/github_login.dart';
 import '../widgets/link.dart';
+import '../widgets/settings_dialog.dart';
 
 typedef EnginePRCallback = void Function(EnginePR pr);
 typedef DartPRCallback = void Function(DartPR pr);
@@ -20,14 +22,18 @@ typedef PRCallback = void Function(PR pr);
 
 class HomePage extends MaterialPage {
   HomePage({
+    required BrightnessSetting brightnessSetting,
     required final EnginePRCallback onNavigateToEnginePR,
     required final DartPRCallback onNavigateToDartPR,
     required final DartGerritPRCallback onNavigateToDartGerritPR,
+    required final ValueChanged<BrightnessSetting> onChangeBrightnessSetting,
     required final PRCallback onNavigateToFrameworkPR,
   }) : super(
     key: const ValueKey('HomePage'),
     restorationId: 'home-page',
     child: _HomePage(
+      brightnessSetting: brightnessSetting,
+      onChangeBrightnessSetting: onChangeBrightnessSetting,
       onNavigateToDartPR: onNavigateToDartPR,
       onNavigateToDartGerritPR: onNavigateToDartGerritPR,
       onNavigateToEnginePR: onNavigateToEnginePR,
@@ -38,12 +44,16 @@ class HomePage extends MaterialPage {
 
 class _HomePage extends ConsumerStatefulWidget {
   const _HomePage({
+    required this.brightnessSetting,
+    required this.onChangeBrightnessSetting,
     required this.onNavigateToDartPR,
     required this.onNavigateToDartGerritPR,
     required this.onNavigateToEnginePR,
     required this.onNavigateToFrameworkPR,
   });
 
+  final BrightnessSetting brightnessSetting;
+  final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
   final DartPRCallback onNavigateToDartPR;
   final DartGerritPRCallback onNavigateToDartGerritPR;
   final EnginePRCallback onNavigateToEnginePR;
@@ -152,12 +162,15 @@ class _HomePageState extends ConsumerState<_HomePage>  {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.info),
-              tooltip: 'About Flutter Releases Info',
+              icon: const Icon(Icons.settings),
+              tooltip: 'Settings',
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (BuildContext context) => const _InfoDialog(),
+                  builder: (BuildContext context) => SettingsDialog(
+                    brightnessSetting: widget.brightnessSetting,
+                    onChangeBrightnessSetting: widget.onChangeBrightnessSetting,
+                  ),
                 );
               },
             ),
@@ -270,58 +283,6 @@ class _Branch extends StatelessWidget {
         ),
         const Text(') '),
         Text('released ${branch.formattedDate}'),
-      ],
-    );
-  }
-}
-
-class _InfoDialog extends StatelessWidget {
-  const _InfoDialog();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('About Flutter Releases Info'),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 256.0),
-        child: Text.rich(
-          TextSpan(
-            text: 'This little web app was originally built to answer the question: Is this PR in stable yet? Paste a link to a Flutter PR and you\'ll get some info about which Flutter releases it has made it into.\n\nFile any issues ',
-            children: <InlineSpan>[
-              WidgetSpan(
-                child: Link(
-                  uri: Uri.parse('https://www.github.com/justinmc/flutter_releases'),
-                  text: 'on GitHub',
-                ),
-              ),
-              TextSpan(
-                text: ', or reach out to me on X (',
-                children: <InlineSpan>[
-                  WidgetSpan(
-                    child: Link(
-                      uri: Uri.parse('https://x.com/justinjmcc'),
-                      text: '@justinjmcc',
-                    ),
-                  ),
-                ],
-              ),
-              const TextSpan(
-                text: ') for anything else.\n\nThis project sometimes hits GitHub\'s rate limiting due to my own lazy engineering, so coming back later might work if it appears to be down.',
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: <Widget>[
-        TextButton(
-          style: TextButton.styleFrom(
-            textStyle: Theme.of(context).textTheme.labelLarge,
-          ),
-          child: const Text('Close'),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
       ],
     );
   }

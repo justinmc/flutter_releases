@@ -16,6 +16,7 @@ import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
 import 'providers/branches_provider.dart';
 import 'widgets/github_login.dart';
+import 'widgets/settings_dialog_home.dart';
 import 'api.dart' as api;
 import 'github_oauth_credentials.dart';
 
@@ -155,12 +156,16 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     this.frameworkPR,
     //this.page = ReleasesPage.home,
     required this.ref,
+    required this.brightnessSetting,
+    required this.onChangeBrightnessSetting,
   }) : navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   final GlobalKey<NavigatorState> navigatorKey;
 
+  BrightnessSetting brightnessSetting;
   final WidgetRef ref;
+  final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
 
   ReleasesPage? page;
   Object? error;
@@ -416,6 +421,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       restorationScopeId: 'root',
       pages: <Page>[
         HomePage(
+          brightnessSetting: brightnessSetting,
+          onChangeBrightnessSetting: onChangeBrightnessSetting,
           onNavigateToDartPR: onNavigateToDartPR,
           onNavigateToDartGerritPR: onNavigateToDartGerritPR,
           onNavigateToEnginePR: onNavigateToEnginePR,
