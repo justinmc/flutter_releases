@@ -377,10 +377,13 @@ class _Arrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(justinmc): SHould be brightness setting!
+    final Brightness brightness = MediaQuery.platformBrightnessOf(context);
+
     return ClipRect(
       child: CustomPaint(
         size: const Size(120.0, 100.0),
-        painter: _ArrowPainter(),
+        painter: _ArrowPainter(brightness: brightness),
       ),
     );
   }
@@ -501,10 +504,19 @@ class _BranchChip extends StatelessWidget {
 }
 
 class _ArrowPainter extends CustomPainter {
+  const _ArrowPainter({
+    required this.brightness,
+  });
+
+  final Brightness brightness;
+
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = Colors.black
+      ..color = switch (brightness) {
+        Brightness.light => Colors.black,
+        Brightness.dark => Colors.white,
+      }
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
