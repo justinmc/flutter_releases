@@ -340,12 +340,11 @@ class _PRChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      // TODO(justinmc): SHould be brightness setting!
-    final Brightness platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final Brightness brightness = Theme.of(context).brightness;
 
     return Flexible(
       child: Card(
-        color: _getColor(platformBrightness),
+        color: _getColor(brightness),
         child: ListTile(
           leading: SizedBox(
             width: 32.0,
@@ -377,8 +376,7 @@ class _Arrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(justinmc): SHould be brightness setting!
-    final Brightness brightness = MediaQuery.platformBrightnessOf(context);
+    final Brightness brightness = Theme.of(context).brightness;
 
     return ClipRect(
       child: CustomPaint(
@@ -434,8 +432,7 @@ class _BranchChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      // TODO(justinmc): SHould be brightness setting!
-    final Brightness brightness = MediaQuery.platformBrightnessOf(context);
+    final Brightness brightness = Theme.of(context).brightness;
 
     return switch (isIn) {
       true => Flexible(
@@ -515,7 +512,7 @@ class _ArrowPainter extends CustomPainter {
     final Paint paint = Paint()
       ..color = switch (brightness) {
         Brightness.light => Colors.black,
-        Brightness.dark => Colors.white,
+        Brightness.dark => const Color(0xffcccccc),
       }
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
