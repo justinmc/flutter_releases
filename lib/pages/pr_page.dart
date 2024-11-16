@@ -404,10 +404,10 @@ class _BranchChip extends StatelessWidget {
   static const Color _closedColor = Color(0xfff7c4c4);
   static const Color _draftColor = Color(0xfff7f2fa);
 
-  static const Color _darkDoneColor = Color(0x66cbf0cc);
-  static const Color _darkPendingColor = Color(0x66f9efc7);
-  static const Color _darkClosedColor = Color(0x66f7c4c4);
-  static const Color _darkDraftColor = Color(0x66f7f2fa);
+  static const Color _darkDoneColor = Color(0xff627362);
+  static const Color _darkPendingColor = Color(0xff7a7561);
+  static const Color _darkClosedColor = Color(0xff5d4a4a);
+  static const Color _darkDraftColor = Color(0xff535253);
 
   static Color _getDoneColor(Brightness brightness) => switch (brightness) {
     Brightness.light => _doneColor,
