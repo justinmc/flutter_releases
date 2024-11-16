@@ -302,12 +302,14 @@ class _PRChip extends StatelessWidget {
   static const String _iconPathShipped = 'assets/images/icon_shipped_128.png';
   static const String _iconPathNeverMerged = 'assets/images/icon_never_merged_128.png';
 
-  Color get _color => switch (pr.status) {
-    PRStatus.open => _BranchChip._pendingColor,
-    PRStatus.draft => _BranchChip._draftColor,
-    PRStatus.merged => _BranchChip._doneColor,
-    PRStatus.closed => _BranchChip._closedColor,
-  };
+  Color _getColor(Brightness brightness) {
+    return switch (pr.status) {
+      PRStatus.open => _BranchChip._getPendingColor(brightness),
+      PRStatus.draft => _BranchChip._getDraftColor(brightness),
+      PRStatus.merged => _BranchChip._getDoneColor(brightness),
+      PRStatus.closed => _BranchChip._getClosedColor(brightness),
+    };
+  }
 
   String get _iconPath => switch (pr.status) {
     PRStatus.open => _iconPathPendingMerge,
@@ -338,9 +340,12 @@ class _PRChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      // TODO(justinmc): SHould be brightness setting!
+    final Brightness platformBrightness = MediaQuery.platformBrightnessOf(context);
+
     return Flexible(
       child: Card(
-        color: _color,
+        color: _getColor(platformBrightness),
         child: ListTile(
           leading: SizedBox(
             width: 32.0,
@@ -399,12 +404,40 @@ class _BranchChip extends StatelessWidget {
   static const Color _closedColor = Color(0xfff7c4c4);
   static const Color _draftColor = Color(0xfff7f2fa);
 
+  static const Color _darkDoneColor = Color(0x66cbf0cc);
+  static const Color _darkPendingColor = Color(0x66f9efc7);
+  static const Color _darkClosedColor = Color(0x66f7c4c4);
+  static const Color _darkDraftColor = Color(0x66f7f2fa);
+
+  static Color _getDoneColor(Brightness brightness) => switch (brightness) {
+    Brightness.light => _doneColor,
+    Brightness.dark => _darkDoneColor,
+  };
+
+  static Color _getPendingColor(Brightness brightness) => switch (brightness) {
+    Brightness.light => _pendingColor,
+    Brightness.dark => _darkPendingColor,
+  };
+
+  static Color _getClosedColor(Brightness brightness) => switch (brightness) {
+    Brightness.light => _closedColor,
+    Brightness.dark => _darkClosedColor,
+  };
+
+  static Color _getDraftColor(Brightness brightness) => switch (brightness) {
+    Brightness.light => _draftColor,
+    Brightness.dark => _darkDraftColor,
+  };
+
   @override
   Widget build(BuildContext context) {
+      // TODO(justinmc): SHould be brightness setting!
+    final Brightness brightness = MediaQuery.platformBrightnessOf(context);
+
     return switch (isIn) {
       true => Flexible(
         child: Card(
-          color: _doneColor,
+          color: _getDoneColor(brightness),
           child: ListTile(
             leading: const SizedBox(
               width: 32.0,
@@ -443,7 +476,7 @@ class _BranchChip extends StatelessWidget {
       ),
       false => Flexible(
         child: Card(
-          color: prClosed ? _closedColor : _pendingColor,
+          color: prClosed ? _getClosedColor(brightness) : _getPendingColor(brightness),
           child: ListTile(
             leading: SizedBox(
               width: 32.0,
