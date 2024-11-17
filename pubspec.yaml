@@ -40,7 +40,7 @@ dependencies:
   url_launcher: ^6.1.10
   flutter_riverpod: ^2.1.1
   oauth2: ^2.0.1
-  shared_preferences: ^2.0.18
+  shared_preferences: ^2.3.3
   arrow_path: ^3.1.0
 
 dev_dependencies:
