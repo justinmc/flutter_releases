@@ -84,6 +84,8 @@ class _PRPageState extends ConsumerState<_PRPage> {
     if (await _updateIsIn(branches.beta) == true) {
       return;
     }
+    // TODO(justinmc): During this time, it says "not released on master branch", when it should be loading instead! I think I intended for the main laoding spinner to handle everything.
+    await Future.delayed(const Duration(milliseconds: 5000));
     await _updateIsIn(branches.master);
   }
 
@@ -262,6 +264,7 @@ class _BranchesInChips extends StatelessWidget {
     }
     return Row(
       children: <Widget>[
+        // TODO(justinmc): If I don't have the necessary data, show a spinner.
         _PRChip(
           pr: pr,
         ),

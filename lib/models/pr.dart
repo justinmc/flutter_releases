@@ -55,7 +55,7 @@ class PR {
       if (draft) {
         return PRStatus.draft;
       }
-      assert(true, 'Weird status.');
+      assert(true, 'Weird PR status.');
     }
     if (state == 'open') {
       return PRStatus.open;
