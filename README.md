@@ -2,12 +2,11 @@
 
 Useful info about Flutter PRs and the releases they fall into.
 
-See it live at [https://justinmc.github.io/flutter_releases/](https://justinmc.github.io/flutter_releases/).
+See it live at [ismyprinflutteryet.com](https://ismyprinflutteryet.com).
 
 ## Publishing
 
  1. `flutter build web`
  2. `rm -rf docs`
  3. `cp -r build/web/ docs`
- 4. Modify docs/index.html `<base href="/">` to `<base href="/flutter_releases/">`
- 5. Commit and push to main.
+ 4. Commit and push to main.
