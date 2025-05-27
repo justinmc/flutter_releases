@@ -61,9 +61,11 @@ class ReleasesRoutePath {
         page = ReleasesPage.unknown;
 }
 
-class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRoutePath> {
+class ReleasesRouteInformationParser
+    extends RouteInformationParser<ReleasesRoutePath> {
   @override
-  SynchronousFuture<ReleasesRoutePath> parseRouteInformation(RouteInformation routeInformation) {
+  SynchronousFuture<ReleasesRoutePath> parseRouteInformation(
+      RouteInformation routeInformation) {
     final Uri uri = Uri.parse(routeInformation.location!);
 
     // Handle '/'
@@ -131,16 +133,20 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
       return RouteInformation(uri: Uri.parse('/'));
     }
     if (configuration.page == ReleasesPage.auth) {
-      return RouteInformation(uri: Uri.parse('/auth?code=${configuration.authCode}'));
+      return RouteInformation(
+          uri: Uri.parse('/auth?code=${configuration.authCode}'));
     }
     if (configuration.page == ReleasesPage.frameworkPR) {
-      return RouteInformation(uri: Uri.parse('/pr/framework/${configuration.prNumber}'));
+      return RouteInformation(
+          uri: Uri.parse('/pr/framework/${configuration.prNumber}'));
     }
     if (configuration.page == ReleasesPage.enginePR) {
-      return RouteInformation(uri: Uri.parse('/pr/engine/${configuration.prNumber}'));
+      return RouteInformation(
+          uri: Uri.parse('/pr/engine/${configuration.prNumber}'));
     }
     if (configuration.page == ReleasesPage.dartPR) {
-      return RouteInformation(uri: Uri.parse('/pr/dart/${configuration.prNumber}'));
+      return RouteInformation(
+          uri: Uri.parse('/pr/dart/${configuration.prNumber}'));
     }
     return null;
   }
@@ -148,7 +154,6 @@ class ReleasesRouteInformationParser extends RouteInformationParser<ReleasesRout
 
 class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<ReleasesRoutePath> {
-
   ReleasesRouterDelegate({
     this.authCode,
     this.dartPR,
@@ -193,7 +198,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       case ReleasesPage.auth:
         return ReleasesRoutePath.auth(authCode);
       case ReleasesPage.frameworkPR:
-        return ReleasesRoutePath.frameworkPR(frameworkPR?.number ?? loadingPRNumber!);
+        return ReleasesRoutePath.frameworkPR(
+            frameworkPR?.number ?? loadingPRNumber!);
       case ReleasesPage.enginePR:
         return ReleasesRoutePath.enginePR(enginePR?.number ?? loadingPRNumber);
       case ReleasesPage.dartPR:
@@ -210,7 +216,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     page = ReleasesPage.home;
     final Branches branches = ref.read(branchesProvider);
 
-    if (branches.stable == null || branches.beta == null || branches.master == null) {
+    if (branches.stable == null ||
+        branches.beta == null ||
+        branches.master == null) {
       try {
         await _getBranches();
       } catch (error) {
@@ -229,7 +237,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.unknown;
-    error = "You've entered a Dart PR from Gerrit, which unfortunately isn't supported right now!  Your best bet is to find the engine Dart roll PR that contains the change you want, and paste in that URL (e.g. https://github.com/flutter/engine/pull/39767).";
+    error =
+        "You've entered a Dart PR from Gerrit, which unfortunately isn't supported right now!  Your best bet is to find the engine Dart roll PR that contains the change you want, and paste in that URL (e.g. https://github.com/flutter/engine/pull/39767).";
     notifyListeners();
   }
 
@@ -271,9 +280,12 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   */
 
   Future<void> _getBranches() async {
-    ref.read(branchesProvider.notifier).stable = await api.getBranch(BranchNames.stable);
-    ref.read(branchesProvider.notifier).beta = await api.getBranch(BranchNames.beta);
-    ref.read(branchesProvider.notifier).master = await api.getBranch(BranchNames.master);
+    ref.read(branchesProvider.notifier).stable =
+        await api.getBranch(BranchNames.stable);
+    ref.read(branchesProvider.notifier).beta =
+        await api.getBranch(BranchNames.beta);
+    ref.read(branchesProvider.notifier).master =
+        await api.getBranch(BranchNames.master);
   }
 
   @override
@@ -298,7 +310,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       print('justin grantString is $grantString');
       assert(grantString != null);
       final grantJson = jsonDecode(grantString!);
-      print('justin recreating AuthorizationCodeGrant with $grantJson and JsonAcceptingHttpClient');
+      print(
+          'justin recreating AuthorizationCodeGrant with $grantJson and JsonAcceptingHttpClient');
       final oauth2.AuthorizationCodeGrant grant = oauth2.AuthorizationCodeGrant(
         grantJson['githubClientId']!,
         Uri.parse(grantJson['authorizationEndpoint']!),
@@ -315,7 +328,8 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       // GitHub API server doesn't support CORS. You should do a middleman
       // caching server instead...
       print('justin handleAuthorizationResponse with code $authCode');
-      final oauth2.Client client = await grant.handleAuthorizationResponse(<String, String>{
+      final oauth2.Client client =
+          await grant.handleAuthorizationResponse(<String, String>{
         'code': authCode!,
       });
       print('justin handleAuthorizationResponse returned');
@@ -421,6 +435,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       restorationScopeId: 'root',
       pages: <Page>[
         HomePage(
+          // TODO(justinmc): Target for state management.
           brightnessSetting: brightnessSetting,
           onChangeBrightnessSetting: onChangeBrightnessSetting,
           onNavigateToDartPR: onNavigateToDartPR,
@@ -440,14 +455,21 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           ),
         if (page == ReleasesPage.frameworkPR)
           PRPage(
+            // TODO(justinmc): Target for state management.
+            brightnessSetting: brightnessSetting,
+            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: frameworkPR,
           ),
         if (page == ReleasesPage.enginePR)
           PRPage(
+            brightnessSetting: brightnessSetting,
+            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: enginePR,
           ),
         if (page == ReleasesPage.dartPR)
           PRPage(
+            brightnessSetting: brightnessSetting,
+            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: dartPR,
           ),
       ],

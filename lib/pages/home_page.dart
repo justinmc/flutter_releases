@@ -13,7 +13,7 @@ import '../models/pr.dart';
 import '../providers/branches_provider.dart';
 //import '../widgets/github_login.dart';
 import '../widgets/link.dart';
-import '../widgets/settings_dialog.dart';
+import '../widgets/settings_button.dart';
 
 typedef EnginePRCallback = void Function(EnginePR pr);
 typedef DartPRCallback = void Function(DartPR pr);
@@ -161,18 +161,9 @@ class _HomePageState extends ConsumerState<_HomePage>  {
                 );
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'Settings',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => SettingsDialog(
-                    brightnessSetting: widget.brightnessSetting,
-                    onChangeBrightnessSetting: widget.onChangeBrightnessSetting,
-                  ),
-                );
-              },
+            SettingsButton(
+              brightnessSetting: widget.brightnessSetting,
+              onChangeBrightnessSetting: widget.onChangeBrightnessSetting,
             ),
             /*
              // TODO(justinmc): Disabled for prod. Do I want to do this?
