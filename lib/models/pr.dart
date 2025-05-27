@@ -18,6 +18,7 @@ class PR {
     required this.title,
     required this.user,
     this.closedAt,
+    this.createdAt,
     this.mergeCommitSHA,
     this.mergedAt,
   });
@@ -28,6 +29,9 @@ class PR {
         closedAt = jsonMap['closed_at'] == null
             ? null
             : DateTime.parse(jsonMap['closed_at']),
+        createdAt = jsonMap['created_at'] == null
+            ? null
+            : DateTime.parse(jsonMap['created_at']),
         mergedAt = jsonMap['merged_at'] == null
             ? null
             : DateTime.parse(jsonMap['merged_at']),
@@ -41,6 +45,7 @@ class PR {
         user = jsonMap['user']['login'];
 
   final DateTime? closedAt;
+  final DateTime? createdAt;
   final String? mergeCommitSHA;
   final DateTime? mergedAt;
   final String branch;
@@ -53,6 +58,15 @@ class PR {
   final String user;
 
   bool get isMerged => mergedAt != null;
+
+  static String? _formatDate(DateTime? date) {
+    if (date == null) {
+      return null;
+    }
+    final DateTime localTime = date.toLocal();
+
+    return '${localTime.year}-${localTime.month}-${localTime.day}';
+  }
 
   PRStatus get status {
     if (mergedAt == null) {
@@ -70,24 +84,11 @@ class PR {
     return PRStatus.merged;
   }
 
-  String? get formattedClosedAt {
-    if (closedAt == null) {
-      return null;
-    }
-    final DateTime localTime = closedAt!.toLocal();
+  String? get formattedClosedAt => _formatDate(closedAt);
 
-    return '${localTime.year}-${localTime.month}-${localTime.day}';
-  }
+  String? get formattedCreatedAt => _formatDate(createdAt);
 
-  String? get formattedMergedAt {
-    if (mergedAt == null) {
-      return null;
-    }
-
-    final DateTime localTime = mergedAt!.toLocal();
-
-    return '${localTime.year}-${localTime.month}-${localTime.day}';
-  }
+  String? get formattedMergedAt => _formatDate(mergedAt);
 
   String? get mergeCommitShortSHA => mergeCommitSHA?.substring(0, 7);
 

@@ -207,6 +207,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                       text: widget.pr!.repoName,
                       url: widget.pr!.repoUrl,
                     ),
+                    Text(' opened on ${widget.pr!.formattedCreatedAt}.'),
                   ],
                 ),
                 if (widget.pr!.status == PRStatus.open) const Text('Open'),
