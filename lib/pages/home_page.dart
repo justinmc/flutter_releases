@@ -29,17 +29,17 @@ class HomePage extends MaterialPage {
     required final ValueChanged<BrightnessSetting> onChangeBrightnessSetting,
     required final PRCallback onNavigateToFrameworkPR,
   }) : super(
-    key: const ValueKey('HomePage'),
-    restorationId: 'home-page',
-    child: _HomePage(
-      brightnessSetting: brightnessSetting,
-      onChangeBrightnessSetting: onChangeBrightnessSetting,
-      onNavigateToDartPR: onNavigateToDartPR,
-      onNavigateToDartGerritPR: onNavigateToDartGerritPR,
-      onNavigateToEnginePR: onNavigateToEnginePR,
-      onNavigateToFrameworkPR: onNavigateToFrameworkPR,
-    ),
-  );
+          key: const ValueKey('HomePage'),
+          restorationId: 'home-page',
+          child: _HomePage(
+            brightnessSetting: brightnessSetting,
+            onChangeBrightnessSetting: onChangeBrightnessSetting,
+            onNavigateToDartPR: onNavigateToDartPR,
+            onNavigateToDartGerritPR: onNavigateToDartGerritPR,
+            onNavigateToEnginePR: onNavigateToEnginePR,
+            onNavigateToFrameworkPR: onNavigateToFrameworkPR,
+          ),
+        );
 }
 
 class _HomePage extends ConsumerStatefulWidget {
@@ -63,14 +63,16 @@ class _HomePage extends ConsumerStatefulWidget {
   ConsumerState<_HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<_HomePage>  {
+class _HomePageState extends ConsumerState<_HomePage> {
   String? _error;
   bool _loading = false;
   final FocusNode _urlFieldFocusNode = FocusNode();
 
   static const String _kEngineString = 'flutter/engine/pull/';
-  static const String _kDartString = 'dart-lang/sdk/pull/'; // e.g. https://github.com/dart-lang/sdk/pull/51494
-  static const String _kDartGerritString = 'dart-review.googlesource.com/c/sdk/+/'; // e.g. https://dart-review.googlesource.com/c/sdk/+/284741
+  static const String _kDartString =
+      'dart-lang/sdk/pull/'; // e.g. https://github.com/dart-lang/sdk/pull/51494
+  static const String _kDartGerritString =
+      'dart-review.googlesource.com/c/sdk/+/'; // e.g. https://dart-review.googlesource.com/c/sdk/+/284741
   static const String _kFrameworkString = 'flutter/flutter/pull/';
 
   // TODO(justinmc): Accept prNumber for flutter PRs too?
@@ -96,10 +98,12 @@ class _HomePageState extends ConsumerState<_HomePage>  {
     try {
       // TODO(justinmc): Caching.
       if (isEngine) {
-        final int enginePrNumber = int.parse(input.substring(engineLocation + _kEngineString.length));
+        final int enginePrNumber =
+            int.parse(input.substring(engineLocation + _kEngineString.length));
         localEnginePR = await api.getEnginePR(enginePrNumber);
       } else if (isDart) {
-        final int dartPrNumber = int.parse(input.substring(dartLocation + _kDartString.length));
+        final int dartPrNumber =
+            int.parse(input.substring(dartLocation + _kDartString.length));
         localDartPR = await api.getDartPR(dartPrNumber);
       } else {
         final int location = input.lastIndexOf(_kFrameworkString);
@@ -151,9 +155,11 @@ class _HomePageState extends ConsumerState<_HomePage>  {
           title: const Text('Flutter Releases Info'),
           actions: <Widget>[
             url_launcher_link.Link(
-              uri: Uri.parse('https://www.github.com/justinmc/flutter_releases'),
+              uri:
+                  Uri.parse('https://www.github.com/justinmc/flutter_releases'),
               target: url_launcher_link.LinkTarget.blank,
-              builder: (BuildContext context, url_launcher_link.FollowLink? followLink) {
+              builder: (BuildContext context,
+                  url_launcher_link.FollowLink? followLink) {
                 return IconButton(
                   icon: const Icon(Icons.code),
                   tooltip: 'GitHub',
@@ -201,16 +207,16 @@ class _HomePageState extends ConsumerState<_HomePage>  {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      const Text('Latest '),
-                      Link(
-                        text: 'releases',
-                        uri: Uri.parse('https://docs.flutter.dev/development/tools/sdk/releases'),
-                      ),
-                      const Text(':'),
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const Text('Latest '),
+                        Link(
+                          text: 'releases',
+                          uri: Uri.parse(
+                              'https://docs.flutter.dev/development/tools/sdk/releases'),
+                        ),
+                        const Text(':'),
+                      ]),
                   if (branches.stable == null)
                     const Text('Loading stable release...'),
                   if (branches.beta == null)
@@ -219,14 +225,14 @@ class _HomePageState extends ConsumerState<_HomePage>  {
                     const Text('Loading master release...'),
                   if (branches.stable != null)
                     _Branch(branch: branches.stable!),
-                  if (branches.beta != null)
-                    _Branch(branch: branches.beta!),
+                  if (branches.beta != null) _Branch(branch: branches.beta!),
                   if (branches.master != null)
                     _Branch(branch: branches.master!),
                   // TODO(justinmc): Loading state.
                   Shortcuts(
                     shortcuts: const <ShortcutActivator, Intent>{
-                      SingleActivator(LogicalKeyboardKey.slash): DoNothingAndStopPropagationIntent(),
+                      SingleActivator(LogicalKeyboardKey.slash):
+                          DoNothingAndStopPropagationIntent(),
                     },
                     child: TextField(
                       autofocus: true,
