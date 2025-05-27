@@ -42,6 +42,7 @@ dependencies:
   oauth2: ^2.0.1
   shared_preferences: ^2.3.3
   arrow_path: ^3.1.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

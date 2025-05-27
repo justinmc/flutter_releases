@@ -217,6 +217,7 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 if (widget.pr!.status == PRStatus.closed)
                   Text('Closed on ${widget.pr!.formattedClosedAt}.'),
                 // TODO(justinmc): When refreshing page, I briefly see all branches but with yellow status. Pop-in from isIn?
+                // I'm not seeing this pop-in anymore, is it fixed?
                 _BranchesInChips(
                   master: branches.master,
                   beta: branches.beta,

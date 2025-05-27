@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import '../constants.dart';
 
 enum PRStatus {
@@ -65,7 +67,8 @@ class PR {
     }
     final DateTime localTime = date.toLocal();
 
-    return '${localTime.year}-${localTime.month}-${localTime.day}';
+    // TODO(justinmc): Real localization.
+    return DateFormat.yMMMMd('en-US').format(localTime);
   }
 
   PRStatus get status {
