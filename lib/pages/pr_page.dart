@@ -13,12 +13,12 @@ class PRPage extends MaterialPage {
   PRPage({
     required this.pr,
   }) : super(
-    key: const ValueKey('FrameworkPRPage'),
-    restorationId: 'framework-pr-page',
-    child: _PRPage(
-      pr: pr,
-    ),
-  );
+          key: const ValueKey('FrameworkPRPage'),
+          restorationId: 'framework-pr-page',
+          child: _PRPage(
+            pr: pr,
+          ),
+        );
 
   final PR? pr;
 }
@@ -61,7 +61,8 @@ class _PRPageState extends ConsumerState<_PRPage> {
           }
           _branchesIsIn.add(BranchNames.beta);
         });
-      } else if (isInBranch == false && _branchesIsIn.contains(branch.branchName)) {
+      } else if (isInBranch == false &&
+          _branchesIsIn.contains(branch.branchName)) {
         setState(() {
           _branchesIsIn.remove(branch.branchName);
         });
@@ -92,8 +93,10 @@ class _PRPageState extends ConsumerState<_PRPage> {
   Future<bool?> _fetchEnginePRIsIn(final Branch? branch) async {
     final EnginePR pr = widget.pr as EnginePR;
 
-    if (pr.status != PRStatus.merged || pr.mergeCommitSHA == null
-        || pr.rollPR == null || pr.rollPR!.mergeCommitSHA == null) {
+    if (pr.status != PRStatus.merged ||
+        pr.mergeCommitSHA == null ||
+        pr.rollPR == null ||
+        pr.rollPR!.mergeCommitSHA == null) {
       return false;
     }
 
@@ -114,7 +117,8 @@ class _PRPageState extends ConsumerState<_PRPage> {
     if (widget.pr == null || branch == null) {
       return null;
     }
-    if (widget.pr!.status != PRStatus.merged || widget.pr!.mergeCommitSHA == null) {
+    if (widget.pr!.status != PRStatus.merged ||
+        widget.pr!.mergeCommitSHA == null) {
       return false;
     }
     return api.isIn(widget.pr!.mergeCommitSHA!, branch.sha);
@@ -205,14 +209,12 @@ class _PRPageState extends ConsumerState<_PRPage> {
                     ),
                   ],
                 ),
-                if (widget.pr!.status == PRStatus.open)
-                  const Text('Open'),
-                if (widget.pr!.status == PRStatus.draft)
-                  const Text('Draft'),
+                if (widget.pr!.status == PRStatus.open) const Text('Open'),
+                if (widget.pr!.status == PRStatus.draft) const Text('Draft'),
                 if (widget.pr!.status == PRStatus.merged)
-                  const Text('Merged'),
+                  Text('Merged on ${widget.pr!.formattedMergedAt}.'),
                 if (widget.pr!.status == PRStatus.closed)
-                  const Text('Closed'),
+                  Text('Closed on ${widget.pr!.formattedClosedAt}.'),
                 // TODO(justinmc): When refreshing page, I briefly see all branches but with yellow status. Pop-in from isIn?
                 _BranchesInChips(
                   master: branches.master,
@@ -225,7 +227,8 @@ class _PRPageState extends ConsumerState<_PRPage> {
                 ),
                 if (widget.pr!.status == PRStatus.merged)
                   // TODO(justinmc): Can I find reverts of a PR and fix this?
-                  const Text('Note that this does not consider if this PR was reverted!'),
+                  const Text(
+                      'Note that this does not consider if this PR was reverted!'),
               ],
             ),
           ),
@@ -254,8 +257,13 @@ class _BranchesInChips extends StatelessWidget {
   final bool? isInStable;
   final PR pr;
 
-  bool get _isLoading => master == null || beta == null || stable == null
-      || isInMaster == null || isInBeta == null || isInStable == null;
+  bool get _isLoading =>
+      master == null ||
+      beta == null ||
+      stable == null ||
+      isInMaster == null ||
+      isInBeta == null ||
+      isInStable == null;
 
   @override
   Widget build(BuildContext context) {
@@ -299,11 +307,13 @@ class _PRChip extends StatelessWidget {
 
   final PR pr;
 
-  static const String _iconPathPendingMerge = 'assets/images/icon_pending_merge_128.png';
+  static const String _iconPathPendingMerge =
+      'assets/images/icon_pending_merge_128.png';
   static const String _iconPathMerge = 'assets/images/icon_merge_128.png';
   static const String _iconPathClosed = 'assets/images/icon_closed_128.png';
   static const String _iconPathShipped = 'assets/images/icon_shipped_128.png';
-  static const String _iconPathNeverMerged = 'assets/images/icon_never_merged_128.png';
+  static const String _iconPathNeverMerged =
+      'assets/images/icon_never_merged_128.png';
 
   Color _getColor(Brightness brightness) {
     return switch (pr.status) {
@@ -315,31 +325,31 @@ class _PRChip extends StatelessWidget {
   }
 
   String get _iconPath => switch (pr.status) {
-    PRStatus.open => _iconPathPendingMerge,
-    PRStatus.draft => _iconPathPendingMerge,
-    PRStatus.merged => _iconPathMerge,
-    PRStatus.closed => _iconPathClosed,
-  };
+        PRStatus.open => _iconPathPendingMerge,
+        PRStatus.draft => _iconPathPendingMerge,
+        PRStatus.merged => _iconPathMerge,
+        PRStatus.closed => _iconPathClosed,
+      };
 
   TextSpan get _statusText => switch (pr.status) {
-    PRStatus.open => const TextSpan(text: ' still open.'),
-    PRStatus.draft => const TextSpan(text: ' still in draft.'),
-    PRStatus.merged => TextSpan(
-      text: 'Merged in commit ',
-      children: <InlineSpan>[
-        WidgetSpan(
-          child: Link.fromString(
-            text: pr.mergeCommitShortSHA!,
-            url: pr.mergeCommitUrl,
+        PRStatus.open => const TextSpan(text: ' still open.'),
+        PRStatus.draft => const TextSpan(text: ' still in draft.'),
+        PRStatus.merged => TextSpan(
+            text: 'Merged in commit ',
+            children: <InlineSpan>[
+              WidgetSpan(
+                child: Link.fromString(
+                  text: pr.mergeCommitShortSHA!,
+                  url: pr.mergeCommitUrl,
+                ),
+              ),
+              TextSpan(
+                text: ' on ${pr.formattedMergedAt}.',
+              ),
+            ],
           ),
-        ),
-        TextSpan(
-          text: ' on ${pr.formattedMergedAt}.',
-        ),
-      ],
-    ),
-    PRStatus.closed => const TextSpan(text: ' closed without merge.'),
-  };
+        PRStatus.closed => const TextSpan(text: ' closed without merge.'),
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -414,24 +424,24 @@ class _BranchChip extends StatelessWidget {
   static const Color _darkDraftColor = Color(0xff535253);
 
   static Color _getDoneColor(Brightness brightness) => switch (brightness) {
-    Brightness.light => _doneColor,
-    Brightness.dark => _darkDoneColor,
-  };
+        Brightness.light => _doneColor,
+        Brightness.dark => _darkDoneColor,
+      };
 
   static Color _getPendingColor(Brightness brightness) => switch (brightness) {
-    Brightness.light => _pendingColor,
-    Brightness.dark => _darkPendingColor,
-  };
+        Brightness.light => _pendingColor,
+        Brightness.dark => _darkPendingColor,
+      };
 
   static Color _getClosedColor(Brightness brightness) => switch (brightness) {
-    Brightness.light => _closedColor,
-    Brightness.dark => _darkClosedColor,
-  };
+        Brightness.light => _closedColor,
+        Brightness.dark => _darkClosedColor,
+      };
 
   static Color _getDraftColor(Brightness brightness) => switch (brightness) {
-    Brightness.light => _draftColor,
-    Brightness.dark => _darkDraftColor,
-  };
+        Brightness.light => _draftColor,
+        Brightness.dark => _darkDraftColor,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -439,66 +449,70 @@ class _BranchChip extends StatelessWidget {
 
     return switch (isIn) {
       true => Flexible(
-        child: Card(
-          color: _getDoneColor(brightness),
-          child: ListTile(
-            leading: const SizedBox(
-              width: 32.0,
-              child: Image(image: AssetImage(_PRChip._iconPathShipped)),
-            ),
-            title: Text(branch.name),
-            subtitle: Text.rich(
-              TextSpan(
-                text: 'Released on the ${branch.name} channel',
-                children: <InlineSpan>[
-                  if (branch.tagName != null)
-                    TextSpan(
-                      text: ' in ',
-                      children: <InlineSpan>[
-                        WidgetSpan(
-                          child: Link.fromString(
-                            // TODO(justinmc): I see a higher version in beta than in stable, is that right??
-                            text: 'v${branch.tagName}',
-                            url: branch.tagUrl,
+          child: Card(
+            color: _getDoneColor(brightness),
+            child: ListTile(
+              leading: const SizedBox(
+                width: 32.0,
+                child: Image(image: AssetImage(_PRChip._iconPathShipped)),
+              ),
+              title: Text(branch.name),
+              subtitle: Text.rich(
+                TextSpan(
+                  text: 'Released on the ${branch.name} channel',
+                  children: <InlineSpan>[
+                    if (branch.tagName != null)
+                      TextSpan(
+                        text: ' in ',
+                        children: <InlineSpan>[
+                          WidgetSpan(
+                            child: Link.fromString(
+                              // TODO(justinmc): I see a higher version in beta than in stable, is that right??
+                              text: 'v${branch.tagName}',
+                              url: branch.tagUrl,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    if (mergeDate != null)
+                      TextSpan(
+                        text: ' on $mergeDate',
+                      ),
+                    const TextSpan(
+                      text: '.',
                     ),
-                  if (mergeDate != null)
-                    TextSpan(
-                      text: ' on $mergeDate',
-                    ),
-                  const TextSpan(
-                    text: '.',
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
       false => Flexible(
-        child: Card(
-          color: prClosed ? _getClosedColor(brightness) : _getPendingColor(brightness),
-          child: ListTile(
-            leading: SizedBox(
-              width: 32.0,
-              child: Image(
-                image: AssetImage(prClosed ? _PRChip._iconPathNeverMerged : _PRChip._iconPathPendingMerge),
+          child: Card(
+            color: prClosed
+                ? _getClosedColor(brightness)
+                : _getPendingColor(brightness),
+            child: ListTile(
+              leading: SizedBox(
+                width: 32.0,
+                child: Image(
+                  image: AssetImage(prClosed
+                      ? _PRChip._iconPathNeverMerged
+                      : _PRChip._iconPathPendingMerge),
+                ),
               ),
+              title: Text(branch.name),
+              // TODO(justinmc): Display at what version the PR made it into
+              // each channel. Can you figure that out based on the tags on the
+              // merge commit?
+              // Actually, won't the version number be the same for each
+              // channel?
+              subtitle: prClosed
+                  ? Text('Never released on the ${branch.name} channel.')
+                  : Text('Not yet released on the ${branch.name} channel.'),
             ),
-            title: Text(branch.name),
-            // TODO(justinmc): Display at what version the PR made it into
-            // each channel. Can you figure that out based on the tags on the
-            // merge commit?
-            // Actually, won't the version number be the same for each
-            // channel?
-            subtitle: prClosed
-                ? Text('Never released on the ${branch.name} channel.')
-                : Text('Not yet released on the ${branch.name} channel.'),
           ),
         ),
-      ),
     };
   }
 }

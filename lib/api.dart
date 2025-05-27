@@ -26,6 +26,7 @@ Future<PR> getPr(final int prNumber) async {
     throw ArgumentError("Couldn't find the given PR \"$prNumber\".");
   }
 
+  print('justin pr json ${prResponse.body}');
   return PR.fromJSON(jsonDecode(prResponse.body));
   /*
   final PR pr = PR.fromJSON(jsonDecode(prResponse.body));

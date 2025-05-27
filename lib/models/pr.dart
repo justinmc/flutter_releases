@@ -17,23 +17,30 @@ class PR {
     required this.state,
     required this.title,
     required this.user,
+    this.closedAt,
     this.mergeCommitSHA,
     this.mergedAt,
   });
 
   PR.fromJSON(
     Map<String, dynamic> jsonMap,
-  ) : mergeCommitSHA = jsonMap['merge_commit_sha'],
-      mergedAt = jsonMap['merged_at'] == null ? null : DateTime.parse(jsonMap['merged_at']),
-      branch = jsonMap['base']['ref'],
-      draft = jsonMap['draft'] == true,
-      number = jsonMap['number'],
-      state = jsonMap['state'],
-      htmlURL = jsonMap['html_url'],
-      repoName = jsonMap['head']['repo']['full_name'],
-      title = jsonMap['title'],
-      user = jsonMap['user']['login'];
+  )   : mergeCommitSHA = jsonMap['merge_commit_sha'],
+        closedAt = jsonMap['closed_at'] == null
+            ? null
+            : DateTime.parse(jsonMap['closed_at']),
+        mergedAt = jsonMap['merged_at'] == null
+            ? null
+            : DateTime.parse(jsonMap['merged_at']),
+        branch = jsonMap['base']['ref'],
+        draft = jsonMap['draft'] == true,
+        number = jsonMap['number'],
+        state = jsonMap['state'],
+        htmlURL = jsonMap['html_url'],
+        repoName = jsonMap['head']['repo']['full_name'],
+        title = jsonMap['title'],
+        user = jsonMap['user']['login'];
 
+  final DateTime? closedAt;
   final String? mergeCommitSHA;
   final DateTime? mergedAt;
   final String branch;
@@ -63,6 +70,15 @@ class PR {
     return PRStatus.merged;
   }
 
+  String? get formattedClosedAt {
+    if (closedAt == null) {
+      return null;
+    }
+    final DateTime localTime = closedAt!.toLocal();
+
+    return '${localTime.year}-${localTime.month}-${localTime.day}';
+  }
+
   String? get formattedMergedAt {
     if (mergedAt == null) {
       return null;
@@ -86,7 +102,7 @@ class PR {
 
   @override
   String toString() {
-    return 'PR {number: $number, mergeCommitSHA: $mergeCommitSHA, mergedAt: $mergedAt, branch: $branch, htmlURL: $htmlURL}';
+    return 'PR {number: $number, mergeCommitSHA: $mergeCommitSHA, closedAt: $closedAt, mergedAt: $mergedAt, branch: $branch, htmlURL: $htmlURL}';
   }
 }
 
@@ -96,17 +112,17 @@ class EnginePR extends PR {
     required final PR enginePr,
     this.rollPR,
   }) : super(
-    branch: enginePr.branch,
-    draft: enginePr.draft,
-    htmlURL: enginePr.htmlURL,
-    number: enginePr.number,
-    repoName: 'flutter/engine',
-    state: enginePr.state,
-    title: enginePr.title,
-    user: enginePr.user,
-    mergeCommitSHA: enginePr.mergeCommitSHA,
-    mergedAt: enginePr.mergedAt,
-  );
+          branch: enginePr.branch,
+          draft: enginePr.draft,
+          htmlURL: enginePr.htmlURL,
+          number: enginePr.number,
+          repoName: 'flutter/engine',
+          state: enginePr.state,
+          title: enginePr.title,
+          user: enginePr.user,
+          mergeCommitSHA: enginePr.mergeCommitSHA,
+          mergedAt: enginePr.mergedAt,
+        );
 
   final PR? rollPR;
 }
@@ -118,17 +134,17 @@ class DartPR extends PR {
     required final PR dartPr,
     this.rollPR,
   }) : super(
-    branch: dartPr.branch,
-    draft: dartPr.draft,
-    htmlURL: dartPr.htmlURL,
-    number: dartPr.number,
-    repoName: 'dart-lang/sdk',
-    state: dartPr.state,
-    title: dartPr.title,
-    user: dartPr.user,
-    mergeCommitSHA: dartPr.mergeCommitSHA,
-    mergedAt: dartPr.mergedAt,
-  );
+          branch: dartPr.branch,
+          draft: dartPr.draft,
+          htmlURL: dartPr.htmlURL,
+          number: dartPr.number,
+          repoName: 'dart-lang/sdk',
+          state: dartPr.state,
+          title: dartPr.title,
+          user: dartPr.user,
+          mergeCommitSHA: dartPr.mergeCommitSHA,
+          mergedAt: dartPr.mergedAt,
+        );
 
   final PR? rollPR;
 }
