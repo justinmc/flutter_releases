@@ -6,7 +6,7 @@ import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
 import '../api.dart' as api;
-import '../providers/branches_provider.dart';
+import '../signal_model.dart';
 import '../widgets/link.dart';
 import '../widgets/settings_button.dart';
 import '../widgets/settings_dialog_home.dart';

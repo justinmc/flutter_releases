@@ -2,11 +2,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_repo_info/widgets/settings_dialog_home.dart';
-import 'package:signals/signals_flutter.dart';
 
-import 'models/branches.dart';
-import 'providers/branches_provider.dart';
 import 'router.dart';
+import 'signal_model.dart';
 
 void main() {
   runApp(

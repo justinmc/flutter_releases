@@ -10,7 +10,7 @@ import '../api.dart' as api;
 import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
-import '../providers/branches_provider.dart';
+import '../signal_model.dart';
 //import '../widgets/github_login.dart';
 import '../widgets/link.dart';
 import '../widgets/settings_button.dart';
