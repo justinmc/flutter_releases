@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signals/signals_flutter.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +14,6 @@ import 'pages/auth_page.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
-import 'providers/branches_provider.dart';
 import 'widgets/github_login.dart';
 import 'widgets/settings_dialog_home.dart';
 import 'api.dart' as api;
@@ -160,7 +159,6 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     this.enginePR,
     this.frameworkPR,
     //this.page = ReleasesPage.home,
-    required this.ref,
     required this.brightnessSetting,
     required this.onChangeBrightnessSetting,
   }) : navigatorKey = GlobalKey<NavigatorState>();
@@ -168,8 +166,9 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   @override
   final GlobalKey<NavigatorState> navigatorKey;
 
+  final Signal<Branches> branchesSignal = signal(const Branches());
+
   BrightnessSetting brightnessSetting;
-  final WidgetRef ref;
   final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
 
   ReleasesPage? page;
@@ -214,11 +213,11 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.home;
-    final Branches branches = ref.read(branchesProvider);
+    //final Branches branches = ref.read(branchesProvider);
 
-    if (branches.stable == null ||
-        branches.beta == null ||
-        branches.master == null) {
+    if (branchesSignal.value.stable == null ||
+        branchesSignal.value.beta == null ||
+        branchesSignal.value.master == null) {
       try {
         await _getBranches();
       } catch (error) {
@@ -280,12 +279,23 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   */
 
   Future<void> _getBranches() async {
+    branchesSignal.value = branchesSignal.value.copyWith(
+      stable: await api.getBranch(BranchNames.stable),
+    );
+    branchesSignal.value = branchesSignal.value.copyWith(
+      beta: await api.getBranch(BranchNames.beta),
+    );
+    branchesSignal.value = branchesSignal.value.copyWith(
+      master: await api.getBranch(BranchNames.master),
+    );
+    /*
     ref.read(branchesProvider.notifier).stable =
         await api.getBranch(BranchNames.stable);
     ref.read(branchesProvider.notifier).beta =
         await api.getBranch(BranchNames.beta);
     ref.read(branchesProvider.notifier).master =
         await api.getBranch(BranchNames.master);
+        */
   }
 
   @override

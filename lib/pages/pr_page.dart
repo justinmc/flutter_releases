@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:arrow_path/arrow_path.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signals/signals_flutter.dart';
 import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
@@ -31,7 +31,7 @@ class PRPage extends MaterialPage {
   final PR? pr;
 }
 
-class _PRPage extends ConsumerStatefulWidget {
+class _PRPage extends StatefulWidget {
   const _PRPage({
     required this.brightnessSetting,
     required this.onChangeBrightnessSetting,
@@ -43,10 +43,11 @@ class _PRPage extends ConsumerStatefulWidget {
   final PR? pr;
 
   @override
-  _PRPageState createState() => _PRPageState();
+  State<_PRPage> createState() => _PRPageState();
 }
 
-class _PRPageState extends ConsumerState<_PRPage> {
+class _PRPageState extends State<_PRPage> {
+  late Branches branches;
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
   bool _finishedLoadingIsIns = false;
 
@@ -90,7 +91,6 @@ class _PRPageState extends ConsumerState<_PRPage> {
   }
 
   Future<void> _updateIsIns() async {
-    final Branches branches = ref.read(branchesProvider);
     if (await _updateIsIn(branches.stable) == true) {
       return;
     }
@@ -158,8 +158,9 @@ class _PRPageState extends ConsumerState<_PRPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    branches = SignalModel.branchesSignalOf(context).watch(context);
     // TODO(justinmc): Cache this isin data.
     _updateIsIns().then((_) {
       setState(() {
@@ -181,8 +182,6 @@ class _PRPageState extends ConsumerState<_PRPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Branches branches = ref.watch(branchesProvider);
-
     if (widget.pr == null) {
       return Scaffold(
         appBar: AppBar(

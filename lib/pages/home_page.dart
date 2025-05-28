@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_repo_info/widgets/settings_dialog_home.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signals/signals_flutter.dart';
 import 'package:url_launcher/link.dart' as url_launcher_link;
 
 import '../api.dart' as api;
@@ -42,7 +42,7 @@ class HomePage extends MaterialPage {
         );
 }
 
-class _HomePage extends ConsumerStatefulWidget {
+class _HomePage extends StatefulWidget {
   const _HomePage({
     required this.brightnessSetting,
     required this.onChangeBrightnessSetting,
@@ -60,10 +60,10 @@ class _HomePage extends ConsumerStatefulWidget {
   final PRCallback onNavigateToFrameworkPR;
 
   @override
-  ConsumerState<_HomePage> createState() => _HomePageState();
+  State<_HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<_HomePage> {
+class _HomePageState extends State<_HomePage> {
   String? _error;
   bool _loading = false;
   final FocusNode _urlFieldFocusNode = FocusNode();
@@ -147,7 +147,8 @@ class _HomePageState extends ConsumerState<_HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final Branches branches = ref.watch(branchesProvider);
+    final Branches branches =
+        SignalModel.branchesSignalOf(context).watch(context);
 
     return SelectionArea(
       child: Scaffold(

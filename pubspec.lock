@@ -102,14 +102,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
-  flutter_riverpod:
-    dependency: "direct main"
-    description:
-      name: flutter_riverpod
-      sha256: "0f1974eff5bbe774bf1d870e406fc6f29e3d6f1c46bd9c58e7172ff68a785d7d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.5.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -256,14 +248,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  riverpod:
+  preact_signals:
     dependency: transitive
     description:
-      name: riverpod
-      sha256: f21b32ffd26a36555e501b04f4a5dca43ed59e16343f1a30c13632b2351dfa4d
+      name: preact_signals
+      sha256: a5b445796a02244b85fa43d79a7030fbfbbb08f7c48277ee93c636140a8fb2e0
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.1"
+    version: "1.8.3"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -320,6 +312,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
+  signals:
+    dependency: "direct main"
+    description:
+      name: signals
+      sha256: "85225d03e71720b6fff62a8296ba7328a3e363d1ffbb9f3a85efaa05d9e85e67"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
+  signals_core:
+    dependency: transitive
+    description:
+      name: signals_core
+      sha256: "5668ff1fb953fe48c88b03d50d43c5fe128cd7c831b932a4157f5f6be868b80f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
+  signals_flutter:
+    dependency: transitive
+    description:
+      name: signals_flutter
+      sha256: "66b36ed0b5961cc7d8d0606813bc3fd66758dc1728cbfcffef0d2a97c7a706a2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -341,14 +357,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
-  state_notifier:
-    dependency: transitive
-    description:
-      name: state_notifier
-      sha256: b8677376aa54f2d7c58280d5a007f9e8774f1968d1fb1c096adcb4792fba29bb
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   stream_channel:
     dependency: transitive
     description:

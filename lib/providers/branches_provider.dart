@@ -1,29 +1,45 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/widgets.dart';
+
+import 'package:signals/signals_flutter.dart';
+
 import '../models/branches.dart';
-import '../models/branch.dart';
 
-class BranchesNotifier extends StateNotifier<Branches> {
-  BranchesNotifier() : super(const Branches());
+/// Where all Signals are inherited from.
+class SignalModel extends InheritedModel<SignalAspect> {
+  const SignalModel({
+    super.key,
+    required this.branchesSignal,
+    required super.child,
+  });
 
-  set stable(Branch? stable) {
-    state = state.copyWith(
-      stable: stable,
-    );
+  final Signal<Branches> branchesSignal;
+
+  static Signal<Branches> branchesSignalOf(BuildContext context) {
+    return InheritedModel.inheritFrom<SignalModel>(
+      context,
+      aspect: SignalAspect.branches,
+      // TODO(justinmc): Is this bang dangerous? I think I know that
+      // SignalModel will always be in the tree...
+    )!
+        .branchesSignal;
   }
 
-  set beta(Branch? beta) {
-    state = state.copyWith(
-      beta: beta,
-    );
+  @override
+  bool updateShouldNotify(SignalModel oldWidget) {
+    return branchesSignal != oldWidget.branchesSignal;
   }
 
-  set master(Branch? master) {
-    state = state.copyWith(
-      master: master,
-    );
+  @override
+  bool updateShouldNotifyDependent(
+      SignalModel oldWidget, Set<SignalAspect> dependencies) {
+    if (branchesSignal != oldWidget.branchesSignal &&
+        dependencies.contains(SignalAspect.branches)) {
+      return true;
+    }
+    return false;
   }
 }
 
-final StateNotifierProvider<BranchesNotifier, Branches> branchesProvider = StateNotifierProvider<BranchesNotifier, Branches>((_) {
-  return BranchesNotifier();
-});
+enum SignalAspect {
+  branches,
+}
