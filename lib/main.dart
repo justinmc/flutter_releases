@@ -1,10 +1,11 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_repo_info/widgets/settings_dialog_home.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:signals/signals_flutter.dart';
 
 import 'router.dart';
 import 'signal_model.dart';
+import 'models/brightness_setting.dart';
 
 void main() {
   runApp(
@@ -25,19 +26,14 @@ class _ReleasesAppState extends State<ReleasesApp> {
   late final ReleasesRouterDelegate _routerDelegate;
   final ReleasesRouteInformationParser _routeInformationParser =
       ReleasesRouteInformationParser();
-  BrightnessSetting _brightnessSetting = BrightnessSetting.platform;
 
-  _onChangeBrightnessSetting(BrightnessSetting value) async {
-    setState(() {
-      _brightnessSetting = value;
-      // TODO(justinmc): Should use state management instead of this hack, and
-      // really all of this piping.
-      _routerDelegate.brightnessSetting = value;
-    });
+  final FlutterSignal<BrightnessSetting> _brightnessSettingSignal =
+      signal(BrightnessSetting.platform);
 
+  void _onChangeBrightnessSetting() async {
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
-    switch (value) {
+    switch (_brightnessSettingSignal.value) {
       case BrightnessSetting.dark:
         await sharedPreferences.setBool('darkMode', true);
       case BrightnessSetting.light:
@@ -50,20 +46,16 @@ class _ReleasesAppState extends State<ReleasesApp> {
   @override
   void initState() {
     super.initState();
-    _routerDelegate = ReleasesRouterDelegate(
-      brightnessSetting: _brightnessSetting,
-      onChangeBrightnessSetting: _onChangeBrightnessSetting,
-    );
+    _routerDelegate = ReleasesRouterDelegate();
+    _brightnessSettingSignal.addListener(_onChangeBrightnessSetting);
 
     SharedPreferences.getInstance().then((SharedPreferences sharedPreferences) {
-      setState(() {
-        _brightnessSetting = switch (sharedPreferences.getBool('darkMode')) {
-          true => BrightnessSetting.dark,
-          false => BrightnessSetting.light,
-          null => BrightnessSetting.platform,
-        };
-        _routerDelegate.brightnessSetting = _brightnessSetting;
-      });
+      _brightnessSettingSignal.value =
+          switch (sharedPreferences.getBool('darkMode')) {
+        true => BrightnessSetting.dark,
+        false => BrightnessSetting.light,
+        null => BrightnessSetting.platform,
+      };
     });
   }
 
@@ -71,6 +63,7 @@ class _ReleasesAppState extends State<ReleasesApp> {
   Widget build(BuildContext context) {
     return SignalModel(
       branchesSignal: _routerDelegate.branchesSignal,
+      brightnessSettingSignal: _brightnessSettingSignal,
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         restorationScopeId: 'root',
@@ -78,7 +71,7 @@ class _ReleasesAppState extends State<ReleasesApp> {
         routeInformationParser: _routeInformationParser,
         theme: ThemeData(
           primarySwatch: Colors.blue,
-          brightness: switch (_brightnessSetting) {
+          brightness: switch (_brightnessSettingSignal.watch(context)) {
             BrightnessSetting.platform =>
               MediaQuery.platformBrightnessOf(context),
             BrightnessSetting.light => Brightness.light,

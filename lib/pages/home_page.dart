@@ -22,18 +22,14 @@ typedef PRCallback = void Function(PR pr);
 
 class HomePage extends MaterialPage {
   HomePage({
-    required BrightnessSetting brightnessSetting,
     required final EnginePRCallback onNavigateToEnginePR,
     required final DartPRCallback onNavigateToDartPR,
     required final DartGerritPRCallback onNavigateToDartGerritPR,
-    required final ValueChanged<BrightnessSetting> onChangeBrightnessSetting,
     required final PRCallback onNavigateToFrameworkPR,
   }) : super(
           key: const ValueKey('HomePage'),
           restorationId: 'home-page',
           child: _HomePage(
-            brightnessSetting: brightnessSetting,
-            onChangeBrightnessSetting: onChangeBrightnessSetting,
             onNavigateToDartPR: onNavigateToDartPR,
             onNavigateToDartGerritPR: onNavigateToDartGerritPR,
             onNavigateToEnginePR: onNavigateToEnginePR,
@@ -44,16 +40,12 @@ class HomePage extends MaterialPage {
 
 class _HomePage extends StatefulWidget {
   const _HomePage({
-    required this.brightnessSetting,
-    required this.onChangeBrightnessSetting,
     required this.onNavigateToDartPR,
     required this.onNavigateToDartGerritPR,
     required this.onNavigateToEnginePR,
     required this.onNavigateToFrameworkPR,
   });
 
-  final BrightnessSetting brightnessSetting;
-  final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
   final DartPRCallback onNavigateToDartPR;
   final DartGerritPRCallback onNavigateToDartGerritPR;
   final EnginePRCallback onNavigateToEnginePR;
@@ -168,10 +160,7 @@ class _HomePageState extends State<_HomePage> {
                 );
               },
             ),
-            SettingsButton(
-              brightnessSetting: widget.brightnessSetting,
-              onChangeBrightnessSetting: widget.onChangeBrightnessSetting,
-            ),
+            const SettingsButton(),
             /*
              // TODO(justinmc): Disabled for prod. Do I want to do this?
             GithubLoginWidget(

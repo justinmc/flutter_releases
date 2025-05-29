@@ -5,16 +5,16 @@ import 'branch.dart';
 @immutable
 class Branches {
   const Branches({
-    final this.stable,
-    final this.beta,
-    final this.master,
+    this.stable,
+    this.beta,
+    this.master,
   });
 
   final Branch? stable;
   final Branch? beta;
   final Branch? master;
 
-  Branches copyWith({ Branch? stable, Branch? beta, Branch? master}) {
+  Branches copyWith({Branch? stable, Branch? beta, Branch? master}) {
     return Branches(
       stable: stable ?? this.stable,
       beta: beta ?? this.beta,

@@ -7,15 +7,15 @@ import 'package:signals/signals_flutter.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'models/pr.dart';
 import 'models/branch.dart';
 import 'models/branches.dart';
+import 'models/brightness_setting.dart';
+import 'models/pr.dart';
 import 'pages/auth_page.dart';
 import 'pages/home_page.dart';
 import 'pages/pr_page.dart';
 import 'pages/unknown_page.dart';
 import 'widgets/github_login.dart';
-import 'widgets/settings_dialog_home.dart';
 import 'api.dart' as api;
 import 'github_oauth_credentials.dart';
 
@@ -159,17 +159,14 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     this.enginePR,
     this.frameworkPR,
     //this.page = ReleasesPage.home,
-    required this.brightnessSetting,
-    required this.onChangeBrightnessSetting,
   }) : navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   final GlobalKey<NavigatorState> navigatorKey;
 
   final Signal<Branches> branchesSignal = signal(const Branches());
-
-  BrightnessSetting brightnessSetting;
-  final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
+  final Signal<BrightnessSetting> brightnessSettingSignal =
+      signal(BrightnessSetting.platform);
 
   ReleasesPage? page;
   Object? error;
@@ -445,9 +442,6 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       restorationScopeId: 'root',
       pages: <Page>[
         HomePage(
-          // TODO(justinmc): Target for state management.
-          brightnessSetting: brightnessSetting,
-          onChangeBrightnessSetting: onChangeBrightnessSetting,
           onNavigateToDartPR: onNavigateToDartPR,
           onNavigateToDartGerritPR: onNavigateToDartGerritPR,
           onNavigateToEnginePR: onNavigateToEnginePR,
@@ -465,21 +459,14 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           ),
         if (page == ReleasesPage.frameworkPR)
           PRPage(
-            // TODO(justinmc): Target for state management.
-            brightnessSetting: brightnessSetting,
-            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: frameworkPR,
           ),
         if (page == ReleasesPage.enginePR)
           PRPage(
-            brightnessSetting: brightnessSetting,
-            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: enginePR,
           ),
         if (page == ReleasesPage.dartPR)
           PRPage(
-            brightnessSetting: brightnessSetting,
-            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: dartPR,
           ),
       ],

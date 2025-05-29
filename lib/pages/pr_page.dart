@@ -9,37 +9,26 @@ import '../api.dart' as api;
 import '../signal_model.dart';
 import '../widgets/link.dart';
 import '../widgets/settings_button.dart';
-import '../widgets/settings_dialog_home.dart';
 
 class PRPage extends MaterialPage {
   PRPage({
     required this.pr,
-    required this.brightnessSetting,
-    required this.onChangeBrightnessSetting,
   }) : super(
           key: const ValueKey('FrameworkPRPage'),
           restorationId: 'framework-pr-page',
           child: _PRPage(
-            brightnessSetting: brightnessSetting,
-            onChangeBrightnessSetting: onChangeBrightnessSetting,
             pr: pr,
           ),
         );
 
-  final BrightnessSetting brightnessSetting;
-  final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
   final PR? pr;
 }
 
 class _PRPage extends StatefulWidget {
   const _PRPage({
-    required this.brightnessSetting,
-    required this.onChangeBrightnessSetting,
     required this.pr,
   });
 
-  final BrightnessSetting brightnessSetting;
-  final ValueChanged<BrightnessSetting> onChangeBrightnessSetting;
   final PR? pr;
 
   @override
@@ -185,11 +174,8 @@ class _PRPageState extends State<_PRPage> {
     if (widget.pr == null) {
       return Scaffold(
         appBar: AppBar(
-          actions: <Widget>[
-            SettingsButton(
-              brightnessSetting: widget.brightnessSetting,
-              onChangeBrightnessSetting: widget.onChangeBrightnessSetting,
-            ),
+          actions: const <Widget>[
+            SettingsButton(),
           ],
         ),
         body: const Center(
@@ -202,11 +188,8 @@ class _PRPageState extends State<_PRPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_title),
-          actions: <Widget>[
-            SettingsButton(
-              brightnessSetting: widget.brightnessSetting,
-              onChangeBrightnessSetting: widget.onChangeBrightnessSetting,
-            ),
+          actions: const <Widget>[
+            SettingsButton(),
           ],
         ),
         body: Padding(
