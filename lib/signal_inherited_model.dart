@@ -5,10 +5,9 @@ import 'package:signals/signals_flutter.dart';
 import '../models/branches.dart';
 import '../models/brightness_setting.dart';
 
-// TODO(justinmc): Rename to SignalInheritedModel? It's confusing with the existence of other models.
 /// Where all Signals are inherited from.
-class SignalModel extends InheritedModel<SignalAspect> {
-  const SignalModel({
+class SignalInheritedModel extends InheritedModel<_SignalAspect> {
+  const SignalInheritedModel({
     super.key,
     required this.branchesSignal,
     required this.brightnessSettingSignal,
@@ -19,9 +18,9 @@ class SignalModel extends InheritedModel<SignalAspect> {
   final Signal<BrightnessSetting> brightnessSettingSignal;
 
   static Signal<Branches> branchesSignalOf(BuildContext context) {
-    return InheritedModel.inheritFrom<SignalModel>(
+    return InheritedModel.inheritFrom<SignalInheritedModel>(
       context,
-      aspect: SignalAspect.branches,
+      aspect: _SignalAspect.branches,
       // TODO(justinmc): Is this bang dangerous? I think I know that
       // SignalModel will always be in the tree...
     )!
@@ -31,35 +30,35 @@ class SignalModel extends InheritedModel<SignalAspect> {
   static Signal<BrightnessSetting> brightnessSettingSignalOf(
     BuildContext context,
   ) {
-    return InheritedModel.inheritFrom<SignalModel>(
+    return InheritedModel.inheritFrom<SignalInheritedModel>(
       context,
-      aspect: SignalAspect.branches,
+      aspect: _SignalAspect.branches,
     )!
         .brightnessSettingSignal;
   }
 
   @override
-  bool updateShouldNotify(SignalModel oldWidget) {
+  bool updateShouldNotify(SignalInheritedModel oldWidget) {
     return branchesSignal != oldWidget.branchesSignal ||
         brightnessSettingSignal != oldWidget.brightnessSettingSignal;
   }
 
   @override
   bool updateShouldNotifyDependent(
-      SignalModel oldWidget, Set<SignalAspect> dependencies) {
+      SignalInheritedModel oldWidget, Set<_SignalAspect> dependencies) {
     if (branchesSignal != oldWidget.branchesSignal &&
-        dependencies.contains(SignalAspect.branches)) {
+        dependencies.contains(_SignalAspect.branches)) {
       return true;
     }
     if (brightnessSettingSignal != oldWidget.brightnessSettingSignal &&
-        dependencies.contains(SignalAspect.brightnessSetting)) {
+        dependencies.contains(_SignalAspect.brightnessSetting)) {
       return true;
     }
     return false;
   }
 }
 
-enum SignalAspect {
+enum _SignalAspect {
   branches,
   brightnessSetting,
 }

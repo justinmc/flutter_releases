@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signals/signals_flutter.dart';
 
 import 'router.dart';
-import 'signal_model.dart';
+import 'signal_inherited_model.dart';
 import 'models/brightness_setting.dart';
 
 void main() {
@@ -61,7 +61,7 @@ class _ReleasesAppState extends State<ReleasesApp> {
 
   @override
   Widget build(BuildContext context) {
-    return SignalModel(
+    return SignalInheritedModel(
       branchesSignal: _routerDelegate.branchesSignal,
       brightnessSettingSignal: _brightnessSettingSignal,
       child: MaterialApp.router(

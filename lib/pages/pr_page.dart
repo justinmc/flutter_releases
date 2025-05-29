@@ -6,7 +6,7 @@ import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
 import '../api.dart' as api;
-import '../signal_model.dart';
+import '../signal_inherited_model.dart';
 import '../widgets/link.dart';
 import '../widgets/settings_button.dart';
 
@@ -149,7 +149,7 @@ class _PRPageState extends State<_PRPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    branches = SignalModel.branchesSignalOf(context).watch(context);
+    branches = SignalInheritedModel.branchesSignalOf(context).watch(context);
     // TODO(justinmc): Cache this isin data.
     _updateIsIns().then((_) {
       setState(() {

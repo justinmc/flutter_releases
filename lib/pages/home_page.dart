@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_repo_info/widgets/settings_dialog_home.dart';
 
 import 'package:signals/signals_flutter.dart';
 import 'package:url_launcher/link.dart' as url_launcher_link;
@@ -10,7 +9,7 @@ import '../api.dart' as api;
 import '../models/branch.dart';
 import '../models/branches.dart';
 import '../models/pr.dart';
-import '../signal_model.dart';
+import '../signal_inherited_model.dart';
 //import '../widgets/github_login.dart';
 import '../widgets/link.dart';
 import '../widgets/settings_button.dart';
@@ -140,7 +139,7 @@ class _HomePageState extends State<_HomePage> {
   @override
   Widget build(BuildContext context) {
     final Branches branches =
-        SignalModel.branchesSignalOf(context).watch(context);
+        SignalInheritedModel.branchesSignalOf(context).watch(context);
 
     return SelectionArea(
       child: Scaffold(

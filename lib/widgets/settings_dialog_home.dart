@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../models/brightness_setting.dart';
-import '../signal_model.dart';
+import '../signal_inherited_model.dart';
 
 class SettingsDialogHome extends StatelessWidget {
   const SettingsDialogHome({
@@ -18,7 +18,7 @@ class SettingsDialogHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Signal<BrightnessSetting> brightnessSettingSignal =
-        SignalModel.brightnessSettingSignalOf(context);
+        SignalInheritedModel.brightnessSettingSignalOf(context);
     final BrightnessSetting brightnessSetting =
         brightnessSettingSignal.watch(context);
 
