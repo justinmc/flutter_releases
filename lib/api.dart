@@ -20,7 +20,7 @@ enum RepoNames {
 // Returns an error if the PR doesn't exist, isn't merged, or isn't based on
 // master.
 Future<PR> getPr(final int prNumber) async {
-  final http.Response prResponse = await _getPR(prNumber);
+  final http.Response prResponse = await _getPR2(prNumber, _Repo.framework);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the given PR \"$prNumber\".");
@@ -153,7 +153,7 @@ Future<bool> isIn(String sha, String isInSha) async {
 
 // Get the PR in the engine repo, not the full EnginePR.
 Future<PR> _getEnginePROnly(final int prNumber) async {
-  final http.Response prResponse = await _getPR(prNumber, kAPIEngine);
+  final http.Response prResponse = await _getPR2(prNumber, _Repo.engine);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the given engine PR \"$prNumber\".");
@@ -165,7 +165,7 @@ Future<PR> _getEnginePROnly(final int prNumber) async {
 // TODO(justinmc): Can I combine this with _getEnginePROnly?
 // Get the PR in the dart-lang/sdk repo, not the full DartPR.
 Future<PR> _getDartPROnly(final int prNumber) async {
-  final http.Response prResponse = await _getPR(prNumber, kAPIDart);
+  final http.Response prResponse = await _getPR2(prNumber, _Repo.dart);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError(
@@ -175,8 +175,10 @@ Future<PR> _getDartPROnly(final int prNumber) async {
   return PR.fromJSON(jsonDecode(prResponse.body));
 }
 
-Future<http.Response> _getPR(final int prNumber, [String url = kAPIFramework]) {
-  return http.get(Uri.parse('$url/pulls/$prNumber'));
+Future<http.Response> _getPR2(final int prNumber, _Repo repo) {
+  // TODO(justinmc): Use .env to choose localhost:8080 or prod server.
+  return http
+      .get(Uri.parse('http://localhost:8080/pulls/${repo.string}/$prNumber'));
 }
 
 Future<http.Response> _getBranch(final String branchName) {
@@ -233,4 +235,17 @@ Future<String> _getTagFullSearch(String sha) async {
 
 Future<http.Response> _compare(final String sha1, final String sha2) {
   return http.get(Uri.parse('$kAPIFramework/compare/$sha1...$sha2'));
+}
+
+// An enum with string constants for each value.
+enum _Repo {
+  framework(string: 'flutter'),
+  engine(string: 'engine'),
+  dart(string: 'dart');
+
+  const _Repo({
+    required this.string,
+  });
+
+  final String string;
 }
