@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signals/signals_flutter.dart';
 
@@ -7,7 +8,8 @@ import 'router.dart';
 import 'signal_inherited_model.dart';
 import 'models/brightness_setting.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
   runApp(
     const ReleasesApp(),
   );

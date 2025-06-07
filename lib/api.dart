@@ -1,6 +1,8 @@
 //TODO(justinmc): Check out Rody's http cached library?
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'models/branch.dart';
 import 'models/pr.dart';
 
@@ -176,9 +178,8 @@ Future<PR> _getDartPROnly(final int prNumber) async {
 }
 
 Future<http.Response> _getPR2(final int prNumber, _Repo repo) {
-  // TODO(justinmc): Use .env to choose localhost:8080 or prod server.
   return http
-      .get(Uri.parse('http://localhost:8080/pulls/${repo.string}/$prNumber'));
+      .get(Uri.parse('${dotenv.env['API_HOST']}pulls/${repo.string}/$prNumber'));
 }
 
 Future<http.Response> _getBranch(final String branchName) {

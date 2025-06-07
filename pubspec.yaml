@@ -43,6 +43,7 @@ dependencies:
   arrow_path: ^3.1.0
   intl: ^0.20.2
   signals: ^6.0.2
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,7 @@ flutter:
     - assets/images/icon_shipped_128.png
     - assets/images/icon_closed_128.png
     - assets/images/icon_never_merged_128.png
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

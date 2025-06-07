@@ -46,3 +46,4 @@ app.*.map.json
 
 # flutter_releases
 /lib/github_oauth_credentials.dart
+*.env
