@@ -45,8 +45,11 @@ Future<PR> getPR(final int prNumber) async {
 /// Get the [EnginePR] for the given engine PR number, which includes the roll
 /// PR where it went into the framework.
 Future<EnginePR> getEnginePR(int prNumber) async {
-  final http.Response prResponse = await http.get(Uri.parse(
-      '$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+flutter/engine%23$prNumber'));
+  final http.Response prResponse = await http.get(
+    Uri.parse(
+      '${dotenv.env['API_HOST']}/pulls/roll/${_Repo.engine.string}/$prNumber',
+    ),
+  );
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the related roll PR.");
@@ -179,7 +182,7 @@ Future<PR> _getDartPROnly(final int prNumber) async {
 
 Future<http.Response> _getPR(final int prNumber, _Repo repo) {
   return http.get(
-      Uri.parse('${dotenv.env['API_HOST']}pulls/${repo.string}/$prNumber'));
+      Uri.parse('${dotenv.env['API_HOST']}/pulls/${repo.string}/$prNumber'));
 }
 
 Future<http.Response> _getBranch(final String branchName) {
