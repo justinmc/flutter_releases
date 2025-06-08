@@ -113,19 +113,19 @@ class PR {
 /// A PR in the engine, along with its merge PR in the framework, if it exists.
 class EnginePR extends PR {
   EnginePR({
-    required final PR enginePr,
+    required final PR enginePR,
     this.rollPR,
   }) : super(
-          branch: enginePr.branch,
-          draft: enginePr.draft,
-          htmlURL: enginePr.htmlURL,
-          number: enginePr.number,
+          branch: enginePR.branch,
+          draft: enginePR.draft,
+          htmlURL: enginePR.htmlURL,
+          number: enginePR.number,
           repoName: 'flutter/engine',
-          state: enginePr.state,
-          title: enginePr.title,
-          user: enginePr.user,
-          mergeCommitSHA: enginePr.mergeCommitSHA,
-          mergedAt: enginePr.mergedAt,
+          state: enginePR.state,
+          title: enginePR.title,
+          user: enginePR.user,
+          mergeCommitSHA: enginePR.mergeCommitSHA,
+          mergedAt: enginePR.mergedAt,
         );
 
   final PR? rollPR;
@@ -135,19 +135,19 @@ class EnginePR extends PR {
 /// A PR in dart-lang/sdk, along with its merge PR in the framework, if it exists.
 class DartPR extends PR {
   DartPR({
-    required final PR dartPr,
+    required final PR dartPR,
     this.rollPR,
   }) : super(
-          branch: dartPr.branch,
-          draft: dartPr.draft,
-          htmlURL: dartPr.htmlURL,
-          number: dartPr.number,
+          branch: dartPR.branch,
+          draft: dartPR.draft,
+          htmlURL: dartPR.htmlURL,
+          number: dartPR.number,
           repoName: 'dart-lang/sdk',
-          state: dartPr.state,
-          title: dartPr.title,
-          user: dartPr.user,
-          mergeCommitSHA: dartPr.mergeCommitSHA,
-          mergedAt: dartPr.mergedAt,
+          state: dartPR.state,
+          title: dartPR.title,
+          user: dartPR.user,
+          mergeCommitSHA: dartPR.mergeCommitSHA,
+          mergedAt: dartPR.mergedAt,
         );
 
   final PR? rollPR;

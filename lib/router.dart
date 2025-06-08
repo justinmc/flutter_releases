@@ -406,7 +406,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       try {
         loadingPRNumber = configuration.prNumber!;
         await _getBranches();
-        frameworkPR = await api.getPr(configuration.prNumber!);
+        frameworkPR = await api.getPR(configuration.prNumber!);
         loadingPRNumber = null;
       } catch (error, stacktrace) {
         print(error);

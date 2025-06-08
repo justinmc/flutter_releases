@@ -21,8 +21,8 @@ enum RepoNames {
 //
 // Returns an error if the PR doesn't exist, isn't merged, or isn't based on
 // master.
-Future<PR> getPr(final int prNumber) async {
-  final http.Response prResponse = await _getPR2(prNumber, _Repo.framework);
+Future<PR> getPR(final int prNumber) async {
+  final http.Response prResponse = await _getPR(prNumber, _Repo.framework);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the given PR \"$prNumber\".");
@@ -57,12 +57,12 @@ Future<EnginePR> getEnginePR(int prNumber) async {
   assert(rollPRs <= 1, 'Found multiple roll PRs for engine PR $prNumber.');
 
   final PR? rollPR =
-      rollPRs == 1 ? await getPr(json['items'][0]['number']) : null;
-  final PR enginePr = await _getEnginePROnly(prNumber);
+      rollPRs == 1 ? await getPR(json['items'][0]['number']) : null;
+  final PR enginePR = await _getEnginePROnly(prNumber);
 
   return EnginePR(
     rollPR: rollPR,
-    enginePr: enginePr,
+    enginePR: enginePR,
   );
 }
 
@@ -81,12 +81,12 @@ Future<DartPR> getDartPR(int prNumber) async {
   assert(rollPRs <= 1, 'Found multiple roll PRs for Dart PR $prNumber.');
 
   final PR? rollPR =
-      rollPRs == 1 ? await getPr(json['items'][0]['number']) : null;
-  final PR dartPr = await _getDartPROnly(prNumber);
+      rollPRs == 1 ? await getPR(json['items'][0]['number']) : null;
+  final PR dartPR = await _getDartPROnly(prNumber);
 
   return DartPR(
     rollPR: rollPR,
-    dartPr: dartPr,
+    dartPR: dartPR,
   );
 }
 
@@ -155,7 +155,7 @@ Future<bool> isIn(String sha, String isInSha) async {
 
 // Get the PR in the engine repo, not the full EnginePR.
 Future<PR> _getEnginePROnly(final int prNumber) async {
-  final http.Response prResponse = await _getPR2(prNumber, _Repo.engine);
+  final http.Response prResponse = await _getPR(prNumber, _Repo.engine);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the given engine PR \"$prNumber\".");
@@ -167,7 +167,7 @@ Future<PR> _getEnginePROnly(final int prNumber) async {
 // TODO(justinmc): Can I combine this with _getEnginePROnly?
 // Get the PR in the dart-lang/sdk repo, not the full DartPR.
 Future<PR> _getDartPROnly(final int prNumber) async {
-  final http.Response prResponse = await _getPR2(prNumber, _Repo.dart);
+  final http.Response prResponse = await _getPR(prNumber, _Repo.dart);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError(
@@ -177,9 +177,9 @@ Future<PR> _getDartPROnly(final int prNumber) async {
   return PR.fromJSON(jsonDecode(prResponse.body));
 }
 
-Future<http.Response> _getPR2(final int prNumber, _Repo repo) {
-  return http
-      .get(Uri.parse('${dotenv.env['API_HOST']}pulls/${repo.string}/$prNumber'));
+Future<http.Response> _getPR(final int prNumber, _Repo repo) {
+  return http.get(
+      Uri.parse('${dotenv.env['API_HOST']}pulls/${repo.string}/$prNumber'));
 }
 
 Future<http.Response> _getBranch(final String branchName) {

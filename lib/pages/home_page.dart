@@ -103,7 +103,7 @@ class _HomePageState extends State<_HomePage> {
             ? int.parse(input)
             // PR URL.
             : int.parse(input.substring(location + _kFrameworkString.length));
-        localFrameworkPR = await api.getPr(prNumber);
+        localFrameworkPR = await api.getPR(prNumber);
       }
     } catch (error, stacktrace) {
       print(error);
