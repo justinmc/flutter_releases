@@ -72,11 +72,12 @@ Future<EnginePR> getEnginePR(int prNumber) async {
   );
 }
 
-/// Get the [DartPR] for the given dart-lang/sdk PR number, which includes the
-/// roll PR where it went into the framework.
-Future<DartPR> getDartPR(int prNumber) async {
-  final http.Response prResponse = await http.get(Uri.parse(
-      '$kAPI/search/issues\?q\=repo:flutter/flutter+author:engine-flutter-autoroll+dart-lang/sdk%23$prNumber'));
+Future<PR?> _getDartRollPR(int prNumber) async {
+  final http.Response prResponse = await http.get(
+    Uri.parse(
+      '${dotenv.env['API_HOST']}/pulls/roll/${_Repo.dartsdk.string}/$prNumber',
+    ),
+  );
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the related roll PR.");
@@ -86,8 +87,13 @@ Future<DartPR> getDartPR(int prNumber) async {
   final int rollPRs = json['total_count'];
   assert(rollPRs <= 1, 'Found multiple roll PRs for Dart PR $prNumber.');
 
-  final PR? rollPR =
-      rollPRs == 1 ? await getPR(json['items'][0]['number']) : null;
+  return rollPRs == 1 ? await getPR(json['items'][0]['number']) : null;
+}
+
+/// Get the [DartPR] for the given dart-lang/sdk PR number, which includes the
+/// roll PR where it went into the framework.
+Future<DartPR> getDartPR(int prNumber) async {
+  final PR? rollPR = await _getDartRollPR(prNumber);
   final PR dartPR = await _getDartPROnly(prNumber);
 
   return DartPR(
@@ -177,7 +183,7 @@ Future<PR> _getEnginePROnly(final int prNumber) async {
 // TODO(justinmc): Can I combine this with _getEnginePROnly?
 // Get the PR in the dart-lang/sdk repo, not the full DartPR.
 Future<PR> _getDartPROnly(final int prNumber) async {
-  final http.Response prResponse = await _getPR(prNumber, _Repo.dart);
+  final http.Response prResponse = await _getPR(prNumber, _Repo.dartsdk);
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError(
@@ -252,7 +258,7 @@ Future<http.Response> _compare(final String sha1, final String sha2) {
 enum _Repo {
   framework(string: 'flutter'),
   engine(string: 'engine'),
-  dart(string: 'dart');
+  dartsdk(string: 'dartsdk');
 
   const _Repo({
     required this.string,
