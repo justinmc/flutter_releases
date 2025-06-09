@@ -198,10 +198,12 @@ Future<http.Response> _getPR(final int prNumber, _Repo repo) {
       Uri.parse('${dotenv.env['API_HOST']}/pulls/${repo.string}/$prNumber'));
 }
 
+// TODO(justinmc): Convert to backend.
 Future<http.Response> _getBranch(final String branchName) {
   return http.get(Uri.parse('$kAPIFramework/branches/$branchName'));
 }
 
+// TODO(justinmc): Convert to backend.
 Future<String> _getTag(String sha, int page) async {
   // 100 is the maximum supported number of tags per page.
   final http.Response response =
@@ -250,6 +252,7 @@ Future<String> _getTagFullSearch(String sha) async {
   }
 }
 
+// TODO(justinmc): Convert to backend.
 Future<http.Response> _compare(final String sha1, final String sha2) {
   return http.get(Uri.parse('$kAPIFramework/compare/$sha1...$sha2'));
 }
