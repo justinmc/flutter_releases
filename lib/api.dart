@@ -63,22 +63,7 @@ Future<PR?> _getEngineRollPR(int prNumber) async {
 /// Get the [EnginePR] for the given engine PR number, which includes the roll
 /// PR where it went into the framework.
 Future<EnginePR> getEnginePR(int prNumber) async {
-  final http.Response prResponse = await http.get(
-    Uri.parse(
-      '${dotenv.env['API_HOST']}/pulls/roll/${_Repo.engine.string}/$prNumber',
-    ),
-  );
-
-  if (prResponse.statusCode != 200) {
-    throw ArgumentError("Couldn't find the related roll PR.");
-  }
-
-  final Map<String, dynamic> json = jsonDecode(prResponse.body);
-  final int rollPRs = json['total_count'];
-  assert(rollPRs <= 1, 'Found multiple roll PRs for engine PR $prNumber.');
-
-  final PR? rollPR =
-      rollPRs == 1 ? await getPR(json['items'][0]['number']) : null;
+  final PR? rollPR = await _getEngineRollPR(prNumber);
   final PR enginePR = await _getEnginePROnly(prNumber);
 
   return EnginePR(
@@ -176,7 +161,11 @@ Future<bool> isIn(String sha, String isInSha) async {
 
 // Get the PR in the engine repo, not the full EnginePR.
 Future<PR> _getEnginePROnly(final int prNumber) async {
-  final http.Response prResponse = await _getPR(prNumber, _Repo.engine);
+  final http.Response prResponse = await http.get(
+    Uri.parse(
+      '${dotenv.env['API_HOST']}/pulls/${_Repo.engine.string}/$prNumber',
+    ),
+  );
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError("Couldn't find the given engine PR \"$prNumber\".");
