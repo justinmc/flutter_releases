@@ -470,6 +470,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
             pr: dartPR,
           ),
       ],
+      // TODO(justinmc): Deprecated.
       onPopPage: (Route<dynamic> route, dynamic result) {
         if (!route.didPop(result)) {
           return false;

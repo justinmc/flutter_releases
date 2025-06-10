@@ -51,6 +51,9 @@ class _PRPageState extends State<_PRPage> {
       return Future.value(null);
     }
     return _fetchIsIn(branch).then((final bool? isInBranch) {
+      if (!mounted) {
+        return isInBranch;
+      }
       if (isInBranch == true && !_branchesIsIn.contains(branch.branchName)) {
         setState(() {
           _branchesIsIn.add(branch.branchName);
@@ -72,6 +75,9 @@ class _PRPageState extends State<_PRPage> {
       return isInBranch;
     }).catchError((error) {
       print(error);
+      if (!mounted) {
+        return false;
+      }
       setState(() {
         _branchesIsIn.remove(branch.branchName);
       });
@@ -152,6 +158,9 @@ class _PRPageState extends State<_PRPage> {
     branches = SignalInheritedModel.branchesSignalOf(context).watch(context);
     // TODO(justinmc): Cache this isin data.
     _updateIsIns().then((_) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _finishedLoadingIsIns = true;
       });
@@ -162,6 +171,9 @@ class _PRPageState extends State<_PRPage> {
   void didUpdateWidget(final _PRPage oldWidget) {
     // TODO(justinmc): Does this always need to be updated?
     _updateIsIns().then((_) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _finishedLoadingIsIns = true;
       });
