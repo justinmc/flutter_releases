@@ -198,9 +198,8 @@ Future<http.Response> _getPR(final int prNumber, _Repo repo) {
       Uri.parse('${dotenv.env['API_HOST']}/pulls/${repo.string}/$prNumber'));
 }
 
-// TODO(justinmc): Convert to backend.
 Future<http.Response> _getBranch(final String branchName) {
-  return http.get(Uri.parse('$kAPIFramework/branches/$branchName'));
+  return http.get(Uri.parse('${dotenv.env['API_HOST']}/branches/$branchName'));
 }
 
 // TODO(justinmc): Convert to backend.
