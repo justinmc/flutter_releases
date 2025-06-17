@@ -12,11 +12,13 @@ import '../widgets/settings_button.dart';
 
 class PRPage extends MaterialPage {
   PRPage({
+    required final VoidCallback onNavigateHome,
     required this.pr,
   }) : super(
           key: const ValueKey('FrameworkPRPage'),
           restorationId: 'framework-pr-page',
           child: _PRPage(
+            onNavigateHome: onNavigateHome,
             pr: pr,
           ),
         );
@@ -26,9 +28,11 @@ class PRPage extends MaterialPage {
 
 class _PRPage extends StatefulWidget {
   const _PRPage({
+    required this.onNavigateHome,
     required this.pr,
   });
 
+  final VoidCallback onNavigateHome;
   final PR? pr;
 
   @override
@@ -186,6 +190,12 @@ class _PRPageState extends State<_PRPage> {
     if (widget.pr == null) {
       return Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              widget.onNavigateHome();
+            },
+          ),
           actions: const <Widget>[
             SettingsButton(),
           ],
@@ -200,6 +210,12 @@ class _PRPageState extends State<_PRPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_title),
+          leading: IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              widget.onNavigateHome();
+            },
+          ),
           actions: const <Widget>[
             SettingsButton(),
           ],
