@@ -40,9 +40,11 @@ class _PRPage extends StatefulWidget {
 }
 
 class _PRPageState extends State<_PRPage> {
-  late Branches branches;
+  late Signal<Branches> branchesSignal;
   final Set<BranchNames> _branchesIsIn = <BranchNames>{};
   bool _finishedLoadingIsIns = false;
+
+  Branches get _branches => branchesSignal.value;
 
   // Check if the PR is in the given branch and update _branchesIsIn.
   //
@@ -90,15 +92,15 @@ class _PRPageState extends State<_PRPage> {
   }
 
   Future<void> _updateIsIns() async {
-    if (await _updateIsIn(branches.stable) == true) {
+    if (await _updateIsIn(_branches.stable) == true) {
       return;
     }
-    if (await _updateIsIn(branches.beta) == true) {
+    if (await _updateIsIn(_branches.beta) == true) {
       return;
     }
     // TODO(justinmc): During this time, it says "not released on master branch", when it should be loading instead! I think I intended for the main laoding spinner to handle everything.
     await Future.delayed(const Duration(milliseconds: 5000));
-    await _updateIsIn(branches.master);
+    await _updateIsIn(_branches.master);
   }
 
   Future<bool?> _fetchEnginePRIsIn(final Branch? branch) async {
@@ -159,7 +161,8 @@ class _PRPageState extends State<_PRPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    branches = SignalInheritedModel.branchesSignalOf(context).watch(context);
+    branchesSignal = SignalInheritedModel.branchesSignalOf(context);
+    branchesSignal.watch(context);
     // TODO(justinmc): Cache this isin data.
     _updateIsIns().then((_) {
       if (!mounted) {
@@ -254,12 +257,12 @@ class _PRPageState extends State<_PRPage> {
                 // TODO(justinmc): When refreshing page, I briefly see all branches but with yellow status. Pop-in from isIn?
                 // I'm not seeing this pop-in anymore, is it fixed?
                 _BranchesInChips(
-                  master: branches.master,
-                  beta: branches.beta,
-                  stable: branches.stable,
-                  isInMaster: _isIn(branches.master),
-                  isInBeta: _isIn(branches.beta),
-                  isInStable: _isIn(branches.stable),
+                  master: _branches.master,
+                  beta: _branches.beta,
+                  stable: _branches.stable,
+                  isInMaster: _isIn(_branches.master),
+                  isInBeta: _isIn(_branches.beta),
+                  isInStable: _isIn(_branches.stable),
                   pr: widget.pr!,
                 ),
                 if (widget.pr!.status == PRStatus.merged)
