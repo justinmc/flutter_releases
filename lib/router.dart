@@ -168,6 +168,12 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   final Signal<BrightnessSetting> brightnessSettingSignal =
       signal(BrightnessSetting.platform);
 
+  // TODO(justinmc): This is a hack on to my simple navigation. Should fully
+  // keep track of a page stack here.
+  // True when navigation has happend inside the app (as opposed to directly
+  // navigating to the page).
+  bool navigatedToInner = false;
+
   ReleasesPage? page;
   Object? error;
   PR? frameworkPR;
@@ -179,9 +185,6 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
   // TODO(justinmc): When navigating back via the back button, where am I
   // supposed to reload the new page's state? E.g. calling getBranches for
   // navigating back to the home page from 404.
-
-  // TODO(justinmc): If I go to a PR page and then refresh, it redirects me to
-  // 404. Why?
 
   @override
   ReleasesRoutePath get currentConfiguration {
@@ -210,6 +213,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.home;
+    navigatedToInner = false;
     //final Branches branches = ref.read(branchesProvider);
 
     if (branchesSignal.value.stable == null ||
@@ -233,6 +237,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     frameworkPR = null;
     enginePR = null;
     page = ReleasesPage.unknown;
+    navigatedToInner = true;
     error =
         "You've entered a Dart PR from Gerrit, which unfortunately isn't supported right now!  Your best bet is to find the engine Dart roll PR that contains the change you want, and paste in that URL (e.g. https://github.com/flutter/engine/pull/39767).";
     notifyListeners();
@@ -243,6 +248,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     enginePR = null;
     dartPR = selectedPR;
     page = ReleasesPage.dartPR;
+    navigatedToInner = true;
     error = null;
     notifyListeners();
   }
@@ -252,6 +258,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     enginePR = selectedPR;
     dartPR = null;
     page = ReleasesPage.enginePR;
+    navigatedToInner = true;
     error = null;
     notifyListeners();
   }
@@ -261,6 +268,7 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
     enginePR = null;
     dartPR = null;
     page = ReleasesPage.frameworkPR;
+    navigatedToInner = true;
     error = null;
     notifyListeners();
   }
@@ -441,12 +449,13 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
       key: navigatorKey,
       restorationScopeId: 'root',
       pages: <Page>[
-        HomePage(
-          onNavigateToDartPR: onNavigateToDartPR,
-          onNavigateToDartGerritPR: onNavigateToDartGerritPR,
-          onNavigateToEnginePR: onNavigateToEnginePR,
-          onNavigateToFrameworkPR: onNavigateToFrameworkPR,
-        ),
+        if (navigatedToInner || page == ReleasesPage.home)
+          HomePage(
+            onNavigateToDartPR: onNavigateToDartPR,
+            onNavigateToDartGerritPR: onNavigateToDartGerritPR,
+            onNavigateToEnginePR: onNavigateToEnginePR,
+            onNavigateToFrameworkPR: onNavigateToFrameworkPR,
+          ),
         if (page == ReleasesPage.unknown)
           UnknownPage(
             onNavigateHome: onNavigateHome,
@@ -459,17 +468,21 @@ class ReleasesRouterDelegate extends RouterDelegate<ReleasesRoutePath>
           ),
         if (page == ReleasesPage.frameworkPR)
           PRPage(
+            onNavigateHome: onNavigateHome,
             pr: frameworkPR,
           ),
         if (page == ReleasesPage.enginePR)
           PRPage(
+            onNavigateHome: onNavigateHome,
             pr: enginePR,
           ),
         if (page == ReleasesPage.dartPR)
           PRPage(
+            onNavigateHome: onNavigateHome,
             pr: dartPR,
           ),
       ],
+      // TODO(justinmc): Deprecated.
       onPopPage: (Route<dynamic> route, dynamic result) {
         if (!route.didPop(result)) {
           return false;
