@@ -102,11 +102,6 @@ Future<DartPR> getDartPR(int prNumber) async {
   );
 }
 
-// This page value is a hack. The latest tags happen to be on this page more or
-// less because it's in alphanumeric order, and we originally tagged with
-// "v1.x" and later removed the "v", so the first pages are full of old tags.
-const _bestGuessTagPage = 4;
-
 Future<Branch> getBranch(BranchNames name) async {
   final http.Response branchResponse = await _getBranch(name.name);
 
@@ -126,22 +121,10 @@ Future<Branch> getBranch(BranchNames name) async {
     return branch;
   }
 
-  late final String tagName;
-  try {
-    // Try to find the tag on the most likely page.
-    tagName = await _getTag(branch.sha, _bestGuessTagPage);
-  } catch (e) {
-    if (e.toString() !=
-        'Invalid argument(s): No tag found for sha ${branch.sha} on page $_bestGuessTagPage.') {
-      rethrow;
-    }
-    // Was able to serach the bestGuessPage, but couldn't find the tag among
-    // those. Could do _getTagFullSearch, but that's pushing the rate limit.
-    // I've seen the tag just plain not appear in the API results anywhere
-    // before, too. So for now just forget about finding the tag if it's not in
-    // the best guess page.
-    return branch;
-  }
+  // TODO(justinmc): If can't find the tag, just continue anyway without it? If
+  // this ends up being reliable and you never it fail, then nevermind, keep
+  // this as-is.
+  final String tagName = await _getTag(branch.sha);
 
   return branch.copyWith(tagName: tagName);
 }
@@ -202,11 +185,9 @@ Future<http.Response> _getBranch(final String branchName) {
   return http.get(Uri.parse('${dotenv.env['API_HOST']}/branches/$branchName'));
 }
 
-// TODO(justinmc): Convert to backend.
-Future<String> _getTag(String sha, int page) async {
-  // 100 is the maximum supported number of tags per page.
+Future<String> _getTag(String sha) async {
   final http.Response response =
-      await http.get(Uri.parse('$kAPIFramework/tags?per_page=100&page=$page'));
+      await http.get(Uri.parse('${dotenv.env['API_HOST']}/tag/$sha'));
 
   if (response.statusCode == 403) {
     throw Exception(
@@ -215,40 +196,14 @@ Future<String> _getTag(String sha, int page) async {
     throw ArgumentError("Couldn't get the tag for sha $sha.");
   }
 
-  final List<dynamic> json = jsonDecode(response.body);
+  final Map<String, dynamic> json = jsonDecode(response.body);
 
-  if (json.isEmpty) {
-    throw ArgumentError('No tags found for sha $sha on page $page.');
+  final String? tagName = json['name'];
+
+  if (tagName == null) {
+    throw ArgumentError('No tag found for sha $sha.');
   }
-
-  for (Map<String, dynamic> jsonTag in json) {
-    final String jsonSha = jsonTag['commit']['sha'];
-    if (jsonSha == sha) {
-      return jsonTag['name'];
-    }
-  }
-
-  throw ArgumentError('No tag found for sha $sha on page $page.');
-}
-
-// TODO(justinmc): If using GitHub login and so not worried about rate limiting,
-// it's probably worth it to do this full search if it's not found on the best
-// guess page.
-Future<String> _getTagFullSearch(String sha) async {
-  int page = 0;
-  while (true) {
-    try {
-      // TODO(justinmc): Should search in parallel?
-      return await _getTag(sha, page);
-    } catch (e) {
-      if (e.toString() !=
-          'Invalid argument(s): No tag found for sha $sha on page $page.') {
-        rethrow;
-      }
-      // Skip page 4, since that was probably already searched.
-      page = page == 3 ? page + 2 : page + 1;
-    }
-  }
+  return tagName;
 }
 
 // TODO(justinmc): Convert to backend.
