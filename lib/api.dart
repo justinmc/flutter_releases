@@ -6,12 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'models/branch.dart';
 import 'models/pr.dart';
 
-const String kAPI = "https://api.github.com";
-const String kAPIFramework = "$kAPI/repos/flutter/flutter";
-const String kAPIEngine = "$kAPI/repos/flutter/engine";
-const String kAPIDart = "$kAPI/repos/dart-lang/sdk";
-const String kBranch = "master";
-
 enum RepoNames {
   flutter,
   engine,
@@ -34,7 +28,7 @@ Future<PR> getPR(final int prNumber) async {
   if (pr.mergeCommitSHA == '' || pr.mergedAt == '') {
     throw ArgumentError('PR "$prNumber" not yet merged.');
   }
-  if (pr.branch != kBranch) {
+  if (pr.branch != 'master') {
     throw ArgumentError("PR \"$prNumber\"'s base isn't master.");
   }
 
@@ -130,22 +124,22 @@ Future<Branch> getBranch(BranchNames name) async {
 }
 
 // Returns true iff sha is in the branch given by isInSha.
-Future<bool> isIn(String sha, String isInSha) async {
-  // TODO(justinmc): This seems to give a 404 for old PRs...
-  final http.Response compareResponse = await _compare(isInSha, sha);
+Future<bool> isIn(String baseSHA, String headSHA) async {
+  final http.Response isInResponse = await http
+      .get(Uri.parse('${dotenv.env['API_HOST']}/isIn/$baseSHA/$headSHA'));
 
-  if (compareResponse.statusCode != 200 || compareResponse.body == '') {
-    throw ArgumentError("Couldn't compare $sha and $isInSha");
+  if (isInResponse.statusCode != 200) {
+    throw ArgumentError("Couldn't compare shas $baseSHA and $headSHA.");
   }
 
-  final Map<String, dynamic> comparison = jsonDecode(compareResponse.body);
+  final Map<String, dynamic> json = jsonDecode(isInResponse.body);
 
-  if (comparison['status'] == '') {
-    throw ArgumentError("Couldn't compare $sha and $isInSha");
+  if (json['isIn'] != 'true' && json['isIn'] != 'false') {
+    throw ArgumentError(
+        "Invalid response when comparing shas $baseSHA and $headSHA.");
   }
 
-  return comparison['status'] == 'behind' ||
-      comparison['status'] == 'identical';
+  return json['isIn'] == 'true';
 }
 
 // Get the PR in the engine repo, not the full EnginePR.
@@ -170,7 +164,7 @@ Future<PR> _getDartPROnly(final int prNumber) async {
 
   if (prResponse.statusCode != 200) {
     throw ArgumentError(
-        "Couldn't find the given engine PR \"$prNumber\" in $kAPIDart.");
+        "Couldn't find the given engine PR \"$prNumber\" in dart-lang/sdk.");
   }
 
   return PR.fromJSON(jsonDecode(prResponse.body));
@@ -204,11 +198,6 @@ Future<String> _getTag(String sha) async {
     throw ArgumentError('No tag found for sha $sha.');
   }
   return tagName;
-}
-
-// TODO(justinmc): Convert to backend.
-Future<http.Response> _compare(final String sha1, final String sha2) {
-  return http.get(Uri.parse('$kAPIFramework/compare/$sha1...$sha2'));
 }
 
 // An enum with string constants for each value.
