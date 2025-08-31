@@ -224,7 +224,8 @@ class _HomePageState extends State<_HomePage> {
                           DoNothingAndStopPropagationIntent(),
                     },
                     child: TextField(
-                      autofocus: true,
+                      // TODO(justinmc): This breaks iOS 26 web.
+                      //autofocus: true,
                       focusNode: _urlFieldFocusNode,
                       enabled: !_loading,
                       decoration: InputDecoration(
